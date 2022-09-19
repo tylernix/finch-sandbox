@@ -7,7 +7,7 @@ export default async function createSandbox(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log(req.method + "/api/sandbox/create")
+  console.log(req.method + " /api/sandbox/create")
   const providers = SandboxProviders()
 
   if (req.method === 'POST') {

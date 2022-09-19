@@ -6,7 +6,7 @@ export default async function directory(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log(req.method + "/api/employer/directory")
+  console.log(req.method + " /api/employer/directory")
   const token = req.headers.access_token
 
   if (!token)

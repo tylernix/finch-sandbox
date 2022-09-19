@@ -2,7 +2,7 @@ export interface Provider_Fields {
     provider_id: string;
     display_name: string;
     logo_src: string;
-    company: Company_Fields;
+    company: Company_Fields | null;
     directory: Directory_Fields;
 }
 

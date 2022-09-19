@@ -1,26 +1,64 @@
 import { faker } from '@faker-js/faker'
-import { Company, Department, Provider, Location, Account, Person } from 'types/finch'
+import { Company, Department, Provider, Location, Account, Person, Individual, Employment, Payment, PayStatement } from 'types/finch'
 import { Accounts_Fields, Company_Fields, Departments_Fields, Locations_Fields, Provider_Fields } from 'types/finch-compatibility'
 
-function createCompany(company: Company_Fields) {
-    // Logic for data fields that depend on each other
-    const entity_type = (company.entity.type) ? getEntityType() : null
-    const entity_subtype = (company.entity.subtype && entity_type) ? getEntitySubtype() : null
+type SandboxGlobal = {
+    companyName: string,
+    companyEmail: string,
+    companyDepartments: Department[] | null,
+    companyLocations: Location[] | null
+}
+type Sandbox = {
+    _company: Company | null,
+    _directory: Person[],
+    _individuals: Individual[],
+    _employments: Employment[],
+    _payments: Payment[] | null,
+    _payStatements: PayStatement[] | null
+}
 
-    return JSON.stringify({
-        id: (company.id) ? faker.datatype.uuid() : null,
-        legal_name: (company.legal_name) ? faker.company.name() : null,
+function createSandbox(provider: Provider_Fields, employeeCount: number): Sandbox {
+    const companyName = faker.company.name()
+    const companyEmail = companyName.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s{1,}/g, '-').toLocaleLowerCase() + ".com"
+    const companyDepartments = (provider.company) ? createDepartments(provider.company.departments) : null
+    const companyLocations = (provider.company) ? createLocations(provider.company.locations) : null
+
+    const _sandbox: SandboxGlobal = {
+        companyName,
+        companyEmail,
+        companyDepartments,
+        companyLocations
+    }
+
+    const _company: Company | null = (provider.company) ? createCompany(_sandbox, provider.company) : null
+    const _directory: Person[] = []
+    const _individuals: Individual[] = []
+    const _employments: Employment[] = []
+    const _payments: Payment[] = []
+    const _payStatements: PayStatement[] = []
+
+    return { _company, _directory, _individuals, _employments, _payments, _payStatements }
+}
+
+function createCompany(sandbox: SandboxGlobal, company: Company_Fields): Company {
+    // Logic for data fields that depend on each other
+    const entityType = (company.entity.type) ? getEntityType() : null
+    const entitySubtype = (company.entity.subtype && entityType) ? getEntitySubtype() : null
+
+    return {
+        id: faker.datatype.uuid(),
+        legal_name: (company.legal_name) ? sandbox.companyName : null,
         entity: {
-            type: entity_type,
-            subtype: entity_subtype
+            type: entityType,
+            subtype: entitySubtype
         },
-        primary_email: (company.primary_email) ? faker.internet.email() : null,
+        primary_email: (company.primary_email) ? faker.internet.email(undefined, undefined, sandbox.companyEmail) : null,
         primary_phone_number: (company.primary_phone_number) ? faker.phone.number('##########') : null,
-        departments: (company.department) ? createDepartments(company.departments) : null,
+        departments: (company.department) ? sandbox.companyDepartments : null,
         ein: (company.ein) ? faker.phone.number('##-#######') : null,
-        locations: (company.location) ? createLocations(company.locations) : null,
-        accounts: (company.account) ? createAccounts(company.accounts) : null,
-    })
+        locations: (company.location) ? sandbox.companyLocations : null,
+        accounts: (company.account) ? createAccounts(sandbox.companyName, company.accounts) : null,
+    }
 }
 
 function createDirectory(amount: number) {
@@ -55,7 +93,7 @@ function getEntityType() {
         "cooperative",
         null
     ]
-    return entityTypes[Math.floor(Math.random() * entityTypes.length)]
+    return getRandomElement(entityTypes)
 }
 
 function getEntitySubtype() {
@@ -81,7 +119,7 @@ function createDepartments(company_departments: Departments_Fields) {
         departments.push({
             name: (company_departments.name) ? faker.name.jobArea() : null,
             parent: {
-                name: (company_departments.parent.name) ? ((i % 4) ? departments[Math.floor(Math.random() * departments.length)]?.name : null) : null,
+                name: (company_departments.parent.name) ? ((i % 4) ? getRandomElement(departments)?.name : null) : null,
             }
         })
     }
@@ -95,23 +133,23 @@ function createLocations(company_locations: Locations_Fields) {
     const max = Math.floor(3)
     const numOfLocations = Math.floor(Math.random() * (max - min + 1) + min)
 
-    // Create random fake locations
+    // Create random fake locations localized to USA for now
     let locations: Location[] = []
     for (let i = 0; i < numOfLocations; i++) {
         locations.push({
-            line1: (company_locations.line1) ? faker.address.streetAddress() : null,
-            line2: (company_locations.line2) ? faker.address.secondaryAddress() : null,
+            line1: (company_locations.line1) ? faker.address.streetAddress(false) : null,
+            line2: (company_locations.line2) ? (Math.random() ? faker.address.secondaryAddress() : null) : null,
             city: (company_locations.city) ? faker.address.city() : null,
             state: (company_locations.state) ? faker.address.stateAbbr() : null,
             postal_code: (company_locations.postal_code) ? faker.address.zipCode() : null,
-            country: (company_locations.country) ? faker.address.countryCode() : null,
+            country: (company_locations.country) ? 'US' : null,
         })
     }
 
     return locations
 }
 
-function createAccounts(company_accounts: Accounts_Fields) {
+function createAccounts(companyName: string, companyAccounts: Accounts_Fields) {
     // Account types as defined by Finch API Reference
     // Adding duplicates in order to reduce the number of nulls
     const accountTypes = [
@@ -122,12 +160,13 @@ function createAccounts(company_accounts: Accounts_Fields) {
         null
     ]
 
-    // We could also list Bank names here so that it looks more real.
     const bankNames = [
         "BANK OF AMERICA",
-        "CHASE",
+        "JPMORGAN CHASE",
         "CAPITAL ONE",
-        "REGIONS"
+        "WELLS FARGO",
+        "PNC",
+        "EVOLVE BANK AND TRUST",
     ]
 
     // Getting a random integer between two values, inclusive at both max and min
@@ -135,19 +174,23 @@ function createAccounts(company_accounts: Accounts_Fields) {
     const max = Math.floor(3)
     const numOfAccounts = Math.floor(Math.random() * (max - min + 1) + min)
 
-    // Create random fake accounts
+    // Create random fake bank accounts
     let accounts: Account[] = []
     for (let i = 0; i < numOfAccounts; i++) {
         accounts.push({
-            routing_number: (company_accounts.routing_number) ? faker.finance.routingNumber() : null,
-            account_name: (company_accounts.account_name) ? faker.company.name() : null,
-            institution_name: (company_accounts.institution_name) ? faker.company.name() : null,
-            account_type: (company_accounts.account_type) ? accountTypes[Math.floor(Math.random() * accountTypes.length)] : null,
-            account_number: (company_accounts.account_number) ? faker.finance.account(10) : null,
+            routing_number: (companyAccounts.routing_number) ? faker.finance.routingNumber() : null,
+            account_name: (companyAccounts.account_name) ? companyName : null,
+            institution_name: (companyAccounts.institution_name) ? getRandomElement(bankNames) : null,
+            account_type: (companyAccounts.account_type) ? getRandomElement(accountTypes) : null,
+            account_number: (companyAccounts.account_number) ? faker.finance.account(10) : null,
         })
     }
 
     return accounts
 }
 
-export { createCompany, createPerson, createAccounts, createDepartments, createDirectory, createLocations }
+export { createSandbox, createCompany, createPerson, createAccounts, createDepartments, createDirectory, createLocations }
+
+function getRandomElement(collection: any[]) {
+    return (collection) ? collection[Math.floor(Math.random() * collection.length)] : null
+}

@@ -1,3 +1,18 @@
+type SandboxGlobal = {
+  companyName: string,
+  companyEmail: string,
+  companyDepartments: Department[] | null,
+  companyLocations: Location[] | null
+}
+type Sandbox = {
+  _company: Company | null,
+  _directory: Person[],
+  _individuals: Individual[],
+  _employments: Employment[],
+  _payments: Payment[] | null,
+  _payStatements: PayStatement[] | null
+}
+
 export interface Provider {
   provider_id: string;
   display_name: string;
@@ -40,8 +55,8 @@ export interface Person {
   isActive: boolean;
 }
 
-export interface Individual<T> {
-  id: T;
+export interface Individual {
+  id: string;
   ssn: string;
   firstName: string;
   lastName: string;
@@ -60,8 +75,8 @@ export interface Individual<T> {
   homePostalCode: string;
 }
 
-export interface Employment<T> {
-  id: T;
+export interface Employment {
+  id: string;
   firstName: string;
   lastName: string;
   middleName: string | null;
@@ -91,8 +106,8 @@ export interface Employment<T> {
   }[];
 }
 
-export interface Payment<T> {
-  id: number;
+export interface Payment {
+  id: string;
   startDate: string;
   endDate: string;
   payDate: string;
@@ -105,8 +120,8 @@ export interface Payment<T> {
   individualIds: T[];
 }
 
-export interface PayStatement<T> {
-  individualId: T;
+export interface PayStatement {
+  individualId: string;
   type: string;
   paymentMethod: string;
   grossPay: number;
@@ -141,17 +156,17 @@ export interface PayStatement<T> {
 
 export interface Company {
   id: string;
-  legal_name: string;
+  legal_name: string | null;
   entity: {
     type: string;
     subtype: string | null;
   };
-  ein: string;
-  primary_email: string;
-  primary_phone_number: string;
-  departments: Department[];
-  locations: Location[];
-  accounts: Account[];
+  ein: string | null;
+  primary_email: string | null;
+  primary_phone_number: string | null;
+  departments: Department[] | null;
+  locations: Location[] | null;
+  accounts: Account[] | null;
 }
 
 export interface SupportedBenefitFeature {
