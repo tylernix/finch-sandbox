@@ -30,13 +30,13 @@ export interface Account {
   routing_number: string | null;
 }
 
-export interface Person<T> {
-  id: T;
+export interface Person {
+  id: string;
   firstName: string;
   lastName: string;
   middleName: string | null;
   departmentName: string;
-  managerId: T | null;
+  managerId: string | null;
   isActive: boolean;
 }
 
