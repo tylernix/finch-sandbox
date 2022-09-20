@@ -12,9 +12,22 @@ export default async function createSandbox(
 
   if (req.method === 'POST') {
     try {
-      const { provider, number_of_employees, manual } = req.body
+      const { provider, number_of_employees, products, manual } = req.body
       if (!provider)
         return res.status(400).json({ msg: "Provider is required" })
+      if (!products || products.length == 0)
+        return res.status(400).json({ msg: "Products is required" })
+      if (!products.every((product: string) =>
+        product === 'company' ||
+        product === 'directory' ||
+        product === 'individual' ||
+        product === 'employment' ||
+        product === 'payment' ||
+        product === 'pay_statement' ||
+        product === 'benefits' ||
+        product === 'ssn'
+      ))
+        return res.status(400).json({ msg: "Invalid product scopes" })
 
       const access_token = 'sandbox:' + uuidv4()
       const company_id = uuidv4()
@@ -49,7 +62,7 @@ export default async function createSandbox(
           break;
         }
         default: {
-          //do nothing
+          return res.status(400).json({ msg: "Invalid provider name" })
         }
       }
 
@@ -63,7 +76,6 @@ export default async function createSandbox(
 
   return res.status(405).json({ msg: "Method not implemented." })
 }
-
 
 
 type Individual = {
