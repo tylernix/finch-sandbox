@@ -17,6 +17,9 @@ export default async function directory(
   const isValidToken = await validToken(token)
   if (!isValidToken)
     return res.status(401).json({ data: 'Unauthorized' })
+  const isAuthorized = await redis.sismember(`products:${token}`, 'directory')
+  if (!isAuthorized)
+    return res.status(401).json({ data: 'Unauthorized: Insufficient product scopes' })
 
   if (req.method === 'GET') {
     try {

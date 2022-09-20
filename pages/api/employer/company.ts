@@ -16,7 +16,10 @@ export default async function company(
 
   const isValidToken = await validToken(token)
   if (!isValidToken)
-    return res.status(401).json({ data: 'Unauthorized' })
+    return res.status(401).json({ data: 'Unauthorized: Invalid access token' })
+  const isAuthorized = await redis.sismember(`products:${token}`, 'company')
+  if (!isAuthorized)
+    return res.status(401).json({ data: 'Unauthorized: Insufficient product scopes' })
 
   if (req.method === 'GET') {
     try {
