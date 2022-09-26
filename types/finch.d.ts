@@ -51,7 +51,9 @@ export interface Person {
   lastName: string;
   middleName: string | null;
   departmentName: string;
-  managerId: string | null;
+  manager: {
+    id: string | null;
+  }
   isActive: boolean;
 }
 
@@ -61,18 +63,18 @@ export interface Individual {
   firstName: string;
   lastName: string;
   middleName: string | null;
+  preferredName: string | null;
   gender: string | null;
   dob: string;
-  personalPhoneNumber: string;
-  personalEmail?: string;
-  workEmail: string;
-  isActive: boolean;
-  homeLine1: string;
-  homeLine2: string | null;
-  homeCity: string;
-  homeState: string;
-  homeCountry: string;
-  homePostalCode: string;
+  residence: Location | null;
+  emails: {
+    data: string | null;
+    type: string | null;
+  }[];
+  phoneNumbers: {
+    data: string | null;
+    type: string | null;
+  }[];
 }
 
 export interface Employment {
@@ -81,28 +83,32 @@ export interface Employment {
   lastName: string;
   middleName: string | null;
   title: string | null;
-  managerId: T | null;
+  manager: {
+    id: string | null;
+  }
   startDate: string;
   endDate: string | null;
-  workLine1: string;
-  workLine2: string | null;
-  workCity: string;
-  workState: string;
-  workCountry: string;
-  workPostalCode: string;
-  employmentType: string;
-  employmentSubtype: string;
   isActive: boolean;
-  departmentName: string;
-  incomeType: string;
-  incomeAmount: number;
-  incomeCurrency: string;
-  effectiveDate: string;
+  classCode: string | null;
+  location: Location | null;
+  employment: {
+    type: string | null;
+    subtype: string | null;
+  };
+  department: {
+    name: string | null;
+  };
+  income: {
+    unit: string | null;
+    amount: number | null;
+    currency: string | null;
+    effectiveDate: string | null;
+  }
   incomeHistory: {
-    incomeType: string;
-    incomeAmount: number;
-    incomeCurrency: string;
-    effectiveDate: string;
+    incomeType: string | null;
+    incomeAmount: number | null;
+    incomeCurrency: string | null;
+    effectiveDate: string | null;
   }[];
 }
 

@@ -1,8 +1,9 @@
 import { faker } from '@faker-js/faker'
 import { Company, Department, Provider, Location, Account, Person, Individual, Employment, Payment, PayStatement } from 'types/finch'
-import { Accounts_Fields, Company_Fields, Departments_Fields, Locations_Fields, Provider_Fields } from 'types/finch-compatibility'
+import { Accounts_Fields, Company_Fields, Departments_Fields, Directory_Fields, Locations_Fields, Provider_Fields } from 'types/finch-compatibility'
 
 type SandboxGlobal = {
+    companyId: string,
     companyName: string,
     companyEmail: string,
     companyDepartments: Department[] | null,
@@ -10,20 +11,21 @@ type SandboxGlobal = {
 }
 type Sandbox = {
     _company: Company | null,
-    _directory: Person[],
+    _directory: Person[] | null,
     _individuals: Individual[],
     _employments: Employment[],
     _payments: Payment[] | null,
     _payStatements: PayStatement[] | null
 }
 
-function createSandbox(provider: Provider_Fields, employeeCount: number): Sandbox {
+function createSandbox(provider: Provider_Fields, employeeCount: number, companyId: string): Sandbox {
     const companyName = faker.company.name()
     const companyEmail = companyName.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s{1,}/g, '-').toLocaleLowerCase() + ".com"
     const companyDepartments = (provider.company) ? createDepartments(provider.company.departments) : null
     const companyLocations = (provider.company) ? createLocations(provider.company.locations) : null
 
     const _sandbox: SandboxGlobal = {
+        companyId,
         companyName,
         companyEmail,
         companyDepartments,
@@ -31,7 +33,7 @@ function createSandbox(provider: Provider_Fields, employeeCount: number): Sandbo
     }
 
     const _company: Company | null = (provider.company) ? createCompany(_sandbox, provider.company) : null
-    const _directory: Person[] = []
+    const _directory: Person[] | null = (provider.directory) ? createDirectory(employeeCount, _sandbox, provider.directory) : null
     const _individuals: Individual[] = []
     const _employments: Employment[] = []
     const _payments: Payment[] = []
@@ -61,7 +63,11 @@ function createCompany(sandbox: SandboxGlobal, company: Company_Fields): Company
     }
 }
 
-function createDirectory(amount: number) {
+function createDirectory(amount: number, sandbox: SandboxGlobal, directory_wait: Directory_Fields) {
+    // for each child-department, create a few managers
+
+    // Generate some employees for this manager
+
     let directory: Person[] = []
     for (let i = 0; i < amount; i++) {
         directory.push(createPerson())
@@ -71,13 +77,18 @@ function createDirectory(amount: number) {
 }
 
 function createPerson(): Person {
+    // Create stub + add to directory
+    // Create individual + add to _individual
+    // create employment + add to _employment
     return {
         id: faker.datatype.uuid(),
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         middleName: null,
         departmentName: 'Engineering',
-        managerId: faker.datatype.uuid(),
+        manager: {
+            id: faker.datatype.uuid(),
+        },
         isActive: faker.datatype.boolean(),
     }
 }

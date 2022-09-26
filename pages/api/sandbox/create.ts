@@ -13,6 +13,7 @@ export default async function createSandbox(
   if (req.method === 'POST') {
     try {
       const { provider, number_of_employees, products, manual } = req.body
+      const dynamic = req.body.dynamic ?? false
       if (!provider)
         return res.status(400).json({ msg: "Provider is required" })
       if (!products || products.length == 0)
@@ -39,27 +40,27 @@ export default async function createSandbox(
       switch (provider) {
         case 'gusto': {
           console.log("Creating Gusto sandbox")
-          providers.createGusto(sandbox_name, employee_amount)
+          providers.createGusto(sandbox_name, employee_amount, company_id, dynamic)
           break;
         }
         case 'bamboohr': {
           console.log("Creating BambooHR sandbox")
-          providers.createBambooHR(sandbox_name, employee_amount)
+          providers.createBambooHR(sandbox_name, employee_amount, company_id, dynamic)
           break;
         }
         case 'paychex_flex': {
           console.log("Creating Paychex Flex sandbox")
-          providers.createPaychexFlex(sandbox_name, employee_amount)
+          providers.createPaychexFlex(sandbox_name, employee_amount, company_id, dynamic)
           break;
         }
         case 'justworks': {
           console.log("Creating Justworks sandbox")
-          providers.createJustworks(sandbox_name, employee_amount)
+          providers.createJustworks(sandbox_name, employee_amount, company_id, dynamic)
           break;
         }
         case 'workday': {
           console.log("Creating Workday sandbox")
-          providers.createWorkday(sandbox_name, employee_amount)
+          providers.createWorkday(sandbox_name, employee_amount, company_id, dynamic)
           break;
         }
         default: {

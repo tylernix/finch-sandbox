@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { validToken } from '@/util/valid-token'
 import redis from '@/util/redis'
+import { Person } from 'types/finch'
+
 
 export default async function directory(
   req: NextApiRequest,
@@ -25,10 +27,19 @@ export default async function directory(
     try {
       const sandbox = await redis.get(token)
       const directory = sandbox !== null ? await redis.hget(sandbox, 'directory') : ''
-      console.log(directory)
+      const parsedDirectory: Person[] = directory !== null ? JSON.parse(directory) : null
+
       if (directory) {
-        console.log(JSON.parse(directory));
-        return res.status(200).json(JSON.parse(directory))
+        //console.log(parsedDirectory);
+        return res.status(200).json(
+          {
+            "paging": {
+              "count": parsedDirectory.length,
+              "offset": 0
+            },
+            "individuals": parsedDirectory
+          }
+        )
       }
 
       throw Error("Error getting company directory information.")

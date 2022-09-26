@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { validToken } from '@/util/valid-token'
 import redis from '@/util/redis'
+import { Company } from 'types/finch'
 
 export default async function company(
   req: NextApiRequest,
@@ -25,10 +26,11 @@ export default async function company(
     try {
       const sandbox = await redis.get(token)
       const company = sandbox !== null ? await redis.hget(sandbox, 'company') : ''
-      //console.log(company)
-      if (company) {
-        //console.log(JSON.parse(company));
-        return res.status(200).json(JSON.parse(company))
+      const parsedCompany: Company[] = company !== null ? JSON.parse(company) : null
+
+      if (parsedCompany) {
+        //console.log(parsedCompany);
+        return res.status(200).json(parsedCompany)
       }
 
       throw Error("Error getting company information.")
