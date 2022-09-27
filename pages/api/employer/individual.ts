@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { validToken } from '@/util/valid-token'
 import redis from '@/util/redis'
-import { Individual } from 'types/finch'
+import { Individual, NotImplementedError } from 'types/finch'
 
 
 type individualIdRequests = {
@@ -53,8 +53,13 @@ export default async function individual(
       //console.log(requestedIds)
 
       let response: any = [];
+      const parsedIndividuals: individualIdResponse[] | NotImplementedError = JSON.parse(individuals);
+
+      // If parsedIndividuals is of type notImplementedError, then return 501
+      if ("status" in parsedIndividuals)
+        return res.status(501).json(parsedIndividuals);
+
       requestedIds.forEach(id => {
-        const parsedIndividuals: individualIdResponse[] = JSON.parse(individuals);
         const match: individualIdResponse | undefined = parsedIndividuals.find(individual => individual.individual_id === id)
         if (match)
           response.push(match)

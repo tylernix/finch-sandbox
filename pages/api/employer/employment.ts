@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { validToken } from '@/util/valid-token'
 import redis from '@/util/redis'
-import { Employment } from 'types/finch'
+import { Employment, NotImplementedError } from 'types/finch'
 
 
 type individualIdRequests = {
@@ -53,8 +53,13 @@ export default async function employment(
       //console.log(requestedIds)
 
       let response: any = [];
+      const parsedEmployees: employeeResponse[] | NotImplementedError = JSON.parse(employees);
+
+      // If parsedEmployees is of type notImplementedError, then return 501
+      if ("status" in parsedEmployees)
+        return res.status(501).json(parsedEmployees);
+
       requestedIds.forEach(id => {
-        const parsedEmployees: employeeResponse[] = JSON.parse(employees);
         const match: employeeResponse | undefined = parsedEmployees.find(employee => employee.individual_id === id)
         if (match)
           response.push(match)

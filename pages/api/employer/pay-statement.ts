@@ -53,13 +53,13 @@ export default async function payStatement(
       console.log(requestedIds)
 
       let response: any = [];
+      const parsedPayStatements: paymentIdResponse[] | NotImplementedError = JSON.parse(payments);
+
+      // If parsedPayStatements is of type notImplementedError, then return 501
+      if ("status" in parsedPayStatements)
+        return res.status(501).json(parsedPayStatements);
+
       requestedIds.forEach(id => {
-        const parsedPayStatements: paymentIdResponse[] | NotImplementedError = JSON.parse(payments);
-
-        // If parsedPayStatements is of type notImplementedError, then return 501
-        if ("status" in parsedPayStatements)
-          return res.status(501).json(parsedPayStatements)
-
         const match: paymentIdResponse | undefined = parsedPayStatements.find(payment => payment.payment_id === id)
         if (match)
           response.push(match)
