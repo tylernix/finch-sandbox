@@ -114,16 +114,23 @@ export interface Employment {
 
 export interface Payment {
   id: string;
-  startDate: string;
-  endDate: string;
-  payDate: string;
-  debitDate: string;
-  companyDebit: number;
-  grossPay: number;
-  netPay: number;
-  employerTaxes: number;
-  employeeTaxes: number;
-  individualIds: T[];
+  pay_period: {
+    start_date: string;
+    end_date: string;
+  }
+  pay_date: string;
+  debit_date: string;
+  company_debit: Currency;
+  gross_pay: Currency;
+  net_pay: Currency;
+  employer_taxes: Currency;
+  employee_taxes: Currency;
+  individualIds: string[];
+}
+
+export interface Currency {
+  amount: number;
+  currency: string;
 }
 
 export interface PayStatement {
