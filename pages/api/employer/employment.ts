@@ -14,14 +14,6 @@ type employeeResponse = {
   code: number,
   body: Employment
 }
-type employeeErrorResponse = {
-  individual_id: string,
-  code: number,
-  body: {
-    error_name: string,
-    error_message: string
-  }
-}
 
 export default async function employment(
   req: NextApiRequest,
@@ -63,7 +55,7 @@ export default async function employment(
       let response: any = [];
       requestedIds.forEach(id => {
         const parsedEmployees: employeeResponse[] = JSON.parse(employees);
-        const match: employeeResponse | undefined = parsedEmployees.find(employee => employee.body.id === id)
+        const match: employeeResponse | undefined = parsedEmployees.find(employee => employee.individual_id === id)
         if (match)
           response.push(match)
         else

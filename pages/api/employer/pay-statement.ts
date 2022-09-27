@@ -1,33 +1,33 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { validToken } from '@/util/valid-token'
 import redis from '@/util/redis'
-import { Individual } from 'types/finch'
+import { NotImplementedError, PayStatement } from 'types/finch'
 
 
-type individualIdRequests = {
+type paymentIdRequests = {
   requests: {
-    individual_id: string
+    payment_id: string
   }[]
 }
-type individualIdResponse = {
-  individual_id: string,
+type paymentIdResponse = {
+  payment_id: string,
   code: number,
-  body: Individual
+  body: PayStatement
 }
 
-export default async function individual(
+export default async function payStatement(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log(req.method + " /api/employer/individual")
+  console.log(req.method + " /api/employer/pay-statement")
   const token = req.headers.access_token
-  const body: individualIdRequests = req.body
+  const body: paymentIdRequests = req.body
 
   if (!body.requests || body.requests.length === 0)
-    return res.status(400).json({ data: 'Individual Id requests required' })
+    return res.status(400).json({ data: 'Payment Id requests required' })
 
-  const requestedIds = body.requests.map(individual => {
-    return individual.individual_id
+  const requestedIds = body.requests.map(payment => {
+    return payment.payment_id
   })
 
   if (!token)
@@ -38,34 +38,39 @@ export default async function individual(
   const isValidToken = await validToken(token)
   if (!isValidToken)
     return res.status(401).json({ data: 'Unauthorized' })
-  const isAuthorized = await redis.sismember(`products:${token}`, 'individual')
+  const isAuthorized = await redis.sismember(`products:${token}`, 'pay_statement')
   if (!isAuthorized)
     return res.status(401).json({ data: 'Unauthorized: Insufficient product scopes' })
 
   if (req.method === 'POST') {
     try {
       const sandbox = await redis.get(token)
-      const individuals = sandbox !== null ? await redis.hget(sandbox, 'individual') : ''
+      const payments = sandbox !== null ? await redis.hget(sandbox, 'pay_statement') : ''
 
-      if (individuals == null)
-        throw Error("Error getting individual information.")
+      if (payments == null)
+        throw Error("Error getting pay-statement information.")
 
-      //console.log(requestedIds)
+      console.log(requestedIds)
 
       let response: any = [];
       requestedIds.forEach(id => {
-        const parsedIndividuals: individualIdResponse[] = JSON.parse(individuals);
-        const match: individualIdResponse | undefined = parsedIndividuals.find(individual => individual.individual_id === id)
+        const parsedPayStatements: paymentIdResponse[] | NotImplementedError = JSON.parse(payments);
+
+        // If parsedPayStatements is of type notImplementedError, then return 501
+        if ("status" in parsedPayStatements)
+          return res.status(501).json(parsedPayStatements)
+
+        const match: paymentIdResponse | undefined = parsedPayStatements.find(payment => payment.payment_id === id)
         if (match)
           response.push(match)
         else
           response.push(
             {
-              "individual_id": id,
+              "payment_id": id,
               "code": 400,
               "body": {
                 "error_name": "invalid_request_error",
-                "error_message": "No individual with id " + id
+                "error_message": "No payment with id " + id
               }
             },
           )
@@ -80,12 +85,12 @@ export default async function individual(
         )
       }
 
-      throw Error("Error getting individual information.")
+      throw Error("Error getting pay-statement information.")
 
     }
     catch (error) {
       console.error(error);
-      return res.status(500).json({ msg: "Error getting individual information." })
+      return res.status(500).json({ msg: "Error getting pay-statement information." })
     }
   }
 

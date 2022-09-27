@@ -182,6 +182,14 @@ export interface Company {
   accounts: Account[] | null;
 }
 
+export interface NotImplementedError {
+  statusCode: number,
+  status: number,
+  code: number,
+  message: string,
+  name: string
+}
+
 export interface SupportedBenefitFeature {
   type: string;
   companyContribution: string[];
@@ -215,3 +223,4 @@ export interface CompanyDataProvider<T> {
   getEnrolledIndividualBenefitsPreFlight: DataOrFactory<any>;
   getEnrolledIndividualBenefits: DataOrFactory<any>;
 }
+

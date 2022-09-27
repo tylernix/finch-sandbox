@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { validToken } from '@/util/valid-token'
 import redis from '@/util/redis'
-import { Payment } from 'types/finch'
+import { Payment, NotImplementedError } from 'types/finch'
+import { PROVIDER_COMPATIBILITY } from '@/util/constants'
 
 // yyyy-mm-dd
 const dateRegex = /^(?:(?:1[6-9]|[2-9]\d)?\d{2})(?:(?:(\/|-|\.)(?:0?[13578]|1[02])\1(?:31))|(?:(\/|-|\.)(?:0?[13-9]|1[0-2])\2(?:29|30)))$|^(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00)))(\/|-|\.)0?2\3(?:29)$|^(?:(?:1[6-9]|[2-9]\d)?\d{2})(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:0?[1-9]|1\d|2[0-8])$/
@@ -41,7 +42,12 @@ export default async function payment(
       if (payments == null)
         throw Error("Error getting payment information.")
 
-      const parsedPayments: Payment[] = JSON.parse(payments);
+      const parsedPayments: Payment[] | NotImplementedError = JSON.parse(payments);
+
+      // If parsedPayment is of type notImplementedError, then return 501
+      if ("status" in parsedPayments)
+        return res.status(501).json(parsedPayments)
+
       const response: Payment[] = parsedPayments.filter(payment => {
         const requestedStartDate = new Date(start_date)
         const requestedEndDate = new Date(end_date)

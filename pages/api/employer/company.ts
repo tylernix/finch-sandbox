@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { validToken } from '@/util/valid-token'
 import redis from '@/util/redis'
-import { Company } from 'types/finch'
+import { Company, NotImplementedError } from 'types/finch'
 
 export default async function company(
   req: NextApiRequest,
@@ -26,7 +26,11 @@ export default async function company(
     try {
       const sandbox = await redis.get(token)
       const company = sandbox !== null ? await redis.hget(sandbox, 'company') : ''
-      const parsedCompany: Company[] = company !== null ? JSON.parse(company) : null
+      const parsedCompany: Company[] | NotImplementedError = company !== null ? JSON.parse(company) : null
+
+      // If parsedCompany is of type notImplementedError, then return 501
+      if ("status" in parsedCompany)
+        return res.status(501).json(parsedCompany)
 
       if (parsedCompany) {
         //console.log(parsedCompany);
