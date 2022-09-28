@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { validToken } from '@/util/valid-token'
+import { validToken, getTokenFromReqAuthHeader } from '@/util/access-token'
 import redis from '@/util/redis'
 import { Individual, NotImplementedError } from 'types/finch'
 
@@ -20,7 +20,7 @@ export default async function individual(
   res: NextApiResponse
 ) {
   console.log(req.method + " /api/employer/individual")
-  const token = req.headers.access_token
+  const token = getTokenFromReqAuthHeader(req)
   const body: individualIdRequests = req.body
 
   if (!body.requests || body.requests.length === 0)
@@ -78,9 +78,7 @@ export default async function individual(
       if (response) {
         return res.status(200).json(
           {
-            "responses": [
-              response
-            ]
+            "responses": response
           }
         )
       }

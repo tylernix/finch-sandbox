@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { validToken } from '@/util/valid-token'
+import { validToken, getTokenFromReqAuthHeader } from '@/util/access-token'
 import redis from '@/util/redis'
 import { Payment, NotImplementedError } from 'types/finch'
 
@@ -11,7 +11,7 @@ export default async function payment(
   res: NextApiResponse
 ) {
   console.log(req.method + " /api/employer/payment")
-  const token = req.headers.access_token
+  const token = getTokenFromReqAuthHeader(req)
   const { start_date, end_date } = req.query
 
   if (!start_date || !end_date)

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { validToken } from '@/util/valid-token'
+import { validToken, getTokenFromReqAuthHeader } from '@/util/access-token'
 import redis from '@/util/redis'
 import { Person } from 'types/finch'
 
@@ -9,7 +9,7 @@ export default async function directory(
   res: NextApiResponse
 ) {
   console.log(req.method + " /api/employer/directory")
-  const token = req.headers.access_token
+  const token = getTokenFromReqAuthHeader(req)
 
   if (!token)
     return res.status(400).json({ msg: "Access token required" })
