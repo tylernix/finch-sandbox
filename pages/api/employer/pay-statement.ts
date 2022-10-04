@@ -24,23 +24,23 @@ export default async function payStatement(
   const body: paymentIdRequests = req.body
 
   if (!body.requests || body.requests.length === 0)
-    return res.status(400).json({ data: 'Payment Id requests required' })
+    return res.status(400).json('Payment Id requests required')
 
   const requestedIds = body.requests.map(payment => {
     return payment.payment_id
   })
 
   if (!token)
-    return res.status(400).json({ msg: "Access token required" })
+    return res.status(400).json("Access token required")
   if (Array.isArray(token))
-    return res.status(400).json({ msg: "Improper Access token format" })
+    return res.status(400).json("Improper Access token format")
 
   const isValidToken = await validToken(token)
   if (!isValidToken)
-    return res.status(401).json({ data: 'Unauthorized' })
+    return res.status(401).json('Unauthorized: Invalid access token')
   const isAuthorized = await redis.sismember(`products:${token}`, 'pay_statement')
   if (!isAuthorized)
-    return res.status(401).json({ data: 'Unauthorized: Insufficient product scopes' })
+    return res.status(401).json('Unauthorized: Insufficient product scopes')
 
   if (req.method === 'POST') {
     try {
@@ -50,7 +50,7 @@ export default async function payStatement(
       if (payments == null)
         throw Error("Error getting pay-statement information.")
 
-      console.log(requestedIds)
+      //console.log(requestedIds)
 
       let response: any = [];
       const parsedPayStatements: paymentIdResponse[] | NotImplementedError = JSON.parse(payments);
@@ -88,9 +88,9 @@ export default async function payStatement(
     }
     catch (error) {
       console.error(error);
-      return res.status(500).json({ msg: "Error getting pay-statement information." })
+      return res.status(500).json("Error getting pay-statement information.")
     }
   }
 
-  return res.status(405).json({ msg: "Method not implemented." })
+  return res.status(405).json("Method not implemented.")
 }

@@ -15,23 +15,23 @@ export default async function payment(
   const { start_date, end_date } = req.query
 
   if (!start_date || !end_date)
-    return res.status(400).json({ msg: "Parameters start_date and end_date required" })
+    return res.status(400).json("Parameters start_date and end_date required")
   if (Array.isArray(start_date) || Array.isArray(end_date))
-    return res.status(400).json({ msg: "Improper start_date or end_date format" })
+    return res.status(400).json("Improper start_date or end_date format")
   if (!start_date.match(dateRegex) || !end_date.match(dateRegex))
-    return res.status(400).json({ msg: "Improper start_date or end_date format" })
+    return res.status(400).json("Improper start_date or end_date format")
 
   if (!token)
-    return res.status(400).json({ msg: "Access token required" })
+    return res.status(400).json("Access token required")
   if (Array.isArray(token))
-    return res.status(400).json({ msg: "Improper Access token format" })
+    return res.status(400).json("Improper Access token format")
 
   const isValidToken = await validToken(token)
   if (!isValidToken)
-    return res.status(401).json({ data: 'Unauthorized' })
+    return res.status(401).json('Unauthorized: Invalid access token')
   const isAuthorized = await redis.sismember(`products:${token}`, 'payment')
   if (!isAuthorized)
-    return res.status(401).json({ data: 'Unauthorized: Insufficient product scopes' })
+    return res.status(401).json('Unauthorized: Insufficient product scopes')
 
   if (req.method === 'GET') {
     try {
@@ -64,9 +64,9 @@ export default async function payment(
     }
     catch (error) {
       console.error(error);
-      return res.status(500).json({ msg: "Error getting payment information." })
+      return res.status(500).json("Error getting payment information.")
     }
   }
 
-  return res.status(405).json({ msg: "Method not implemented." })
+  return res.status(405).json("Method not implemented.")
 }

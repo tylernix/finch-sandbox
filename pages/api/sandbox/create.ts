@@ -68,7 +68,7 @@ export default async function createSandbox(
         }
       }
 
-      return res.status(200).json({ sandbox_created: provider, company_id, access_token })
+      return res.status(200).json({ payroll_provider_id: provider, company_id, access_token })
     }
     catch (error) {
       console.error(error);

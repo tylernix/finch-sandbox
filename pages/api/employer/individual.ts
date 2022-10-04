@@ -31,16 +31,16 @@ export default async function individual(
   })
 
   if (!token)
-    return res.status(400).json({ msg: "Access token required" })
+    return res.status(400).json("Access token required")
   if (Array.isArray(token))
-    return res.status(400).json({ msg: "Improper Access token format" })
+    return res.status(400).json("Improper Access token format")
 
   const isValidToken = await validToken(token)
   if (!isValidToken)
-    return res.status(401).json({ data: 'Unauthorized' })
+    return res.status(401).json('Unauthorized: Invalid access token')
   const isAuthorized = await redis.sismember(`products:${token}`, 'individual')
   if (!isAuthorized)
-    return res.status(401).json({ data: 'Unauthorized: Insufficient product scopes' })
+    return res.status(401).json('Unauthorized: Insufficient product scopes')
 
   if (req.method === 'POST') {
     try {
@@ -88,9 +88,9 @@ export default async function individual(
     }
     catch (error) {
       console.error(error);
-      return res.status(500).json({ msg: "Error getting individual information." })
+      return res.status(500).json("Error getting individual information.")
     }
   }
 
-  return res.status(405).json({ msg: "Method not implemented." })
+  return res.status(405).json("Method not implemented.")
 }
