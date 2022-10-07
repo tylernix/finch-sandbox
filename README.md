@@ -48,10 +48,10 @@ Sandbox:
 
 Test your application by creating a sandbox for each provider you plan on integrating. While testing, use the sandbox providers in place of live providers.
 
-First, create a sandbox provider by calling `/api/create` and specifying a `provider` and `products`. This curl command is going to make an HTTP POST request with a JSON encoded request body.
+First, create a sandbox provider by calling `https://finch-sandbox.vercel.app/api/sandbox/create` and specifying a `provider` and `products`. This curl command is going to make an HTTP POST request with a JSON encoded request body.
 
 ```bash
-curl https://tryfinch.com/api/create \
+curl https://finch-sandbox.vercel.app/api/sandbox/create \
   -X POST \
   -H "Content-Type: application/json" \
   --data-raw '{
@@ -65,9 +65,9 @@ The response to this request will contain a JSON encoded object containing a `pa
 Copy the `access_token` and run the following curl command to retrieve the employee directory!
 
 ```bash
-curl https://tryfinch.com/api/employer/directory \
+curl https://finch-sandbox.vercel.app/api/employer/directory \
   -H 'Authorization: Bearer <your_access_token>' \
-  -H 'Content-Type: application/json' \
+  -H 'Content-Type: application/json'
 ```
 
 ## Learn More
