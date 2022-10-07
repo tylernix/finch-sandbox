@@ -21,8 +21,8 @@ type Sandbox = {
 function createSandbox(provider: Provider_Fields, employeeCount: number, companyId: string): Sandbox {
     const companyName = faker.company.name()
     const companyEmail = companyName.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s{1,}/g, '-').toLocaleLowerCase() + ".com"
-    const companyDepartments = (provider.company) ? createDepartments(provider.company.departments) : null
-    const companyLocations = (provider.company) ? createLocations(provider.company.locations) : null
+    const companyDepartments = (provider.compatibility.company) ? createDepartments(provider.compatibility.company.departments) : null
+    const companyLocations = (provider.compatibility.company) ? createLocations(provider.compatibility.company.locations) : null
 
     const _sandbox: SandboxGlobal = {
         companyId,
@@ -32,8 +32,8 @@ function createSandbox(provider: Provider_Fields, employeeCount: number, company
         companyLocations
     }
 
-    const _company: Company | null = (provider.company) ? createCompany(_sandbox, provider.company) : null
-    const _directory: Person[] | null = (provider.directory) ? createDirectory(employeeCount, _sandbox, provider.directory) : null
+    const _company: Company | null = (provider.compatibility.company) ? createCompany(_sandbox, provider.compatibility.company) : null
+    const _directory: Person[] | null = (provider.compatibility.directory) ? createDirectory(employeeCount, _sandbox, provider.compatibility.directory) : null
     const _individuals: Individual[] = []
     const _employments: Employment[] = []
     const _payments: Payment[] = []

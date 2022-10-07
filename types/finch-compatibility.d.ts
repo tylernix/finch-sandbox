@@ -1,9 +1,16 @@
 export interface Provider_Fields {
     provider_id: string;
     display_name: string;
-    logo_src: string;
-    company: Company_Fields | null;
-    directory: Directory_Fields;
+    logo: string;
+    icon: string | null;
+    products: string[];
+    mfa_required: string | null;
+    primary_color: string | null;
+    compatibility: {
+        company: Company_Fields | null;
+        directory: Directory_Fields;
+    }
+
 }
 
 export interface Company_Fields {
