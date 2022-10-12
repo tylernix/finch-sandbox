@@ -18,7 +18,7 @@ The sandbox currently supports 5 mock providers:
 
 New sandbox providers can be requested by contacting [developers@tryfinch.com](mailto:developers@tryfinch.com)
 
-> Note: As of now, the sandbox only returns the same static employer data for each provider, but changed to represent the various fields each provider supports. In the future, we plan on dynamically generating each employer's data upon sandbox creation to make it seem more realistic.
+> Note: As of now, the sandbox only returns the same static employer data for each provider, but changed to represent the [various fields each provider supports](https://developer.tryfinch.com/docs/reference/0517ab806dda4-compatibility). In the future, we plan on dynamically generating each employer's data upon sandbox creation to make it seem more realistic.
 
 The sandbox currently supports the following endpoints:
 
@@ -62,7 +62,7 @@ curl https://finch-sandbox.vercel.app/api/sandbox/create \
 
 The response to this request will contain a JSON encoded object containing a `payroll_provider_id`, `company_id`, and an `access_token`. Now that you have a valid access_token (for the sandbox), you will use this access token to send requests to Finch's Sandbox APIs from now on.
 
-Copy the `access_token` and run the following curl command to retrieve the employee directory!
+Copy the `access_token` and paste it inside the request Authorization header. Run the following curl command to retrieve the employee directory!
 
 ```bash
 curl https://finch-sandbox.vercel.app/api/employer/directory \
