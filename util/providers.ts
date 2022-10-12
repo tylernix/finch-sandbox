@@ -10,7 +10,7 @@ import {
 } from './constants'
 
 export default function Providers() {
-    function createGusto(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean) {
+    async function createGusto(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean): Promise<boolean> {
         if (dynamic) {
             const newGustoSandbox = createSandbox(PROVIDER_COMPATIBILITY.gusto, employee_amount, company_id)
 
@@ -25,86 +25,137 @@ export default function Providers() {
                 }
             })
 
-            redis.hset(sandbox_name, 'company', JSON.stringify(newGustoSandbox._company))
-            redis.hset(sandbox_name, 'directory', JSON.stringify(newGustoSandbox._directory))
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(newGustoSandbox._company))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(newGustoSandbox._directory))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2) return true
+            else return false
+
         } else {
-            redis.hset(sandbox_name, 'company', JSON.stringify(GUSTO_COMPANY))
-            redis.hset(sandbox_name, 'directory', JSON.stringify(GUSTO_DIRECTORY))
-            redis.hset(sandbox_name, 'individual', JSON.stringify(GUSTO_INDIVIDUAL))
-            redis.hset(sandbox_name, 'employment', JSON.stringify(GUSTO_EMPLOYMENT))
-            redis.hset(sandbox_name, 'payment', JSON.stringify(GUSTO_PAYMENTS))
-            redis.hset(sandbox_name, 'pay_statement', JSON.stringify(GUSTO_PAYSTATEMENTS))
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(GUSTO_COMPANY))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(GUSTO_DIRECTORY))
+            const r3 = await redis.hset(sandbox_name, 'individual', JSON.stringify(GUSTO_INDIVIDUAL))
+            const r4 = await redis.hset(sandbox_name, 'employment', JSON.stringify(GUSTO_EMPLOYMENT))
+            const r5 = await redis.hset(sandbox_name, 'payment', JSON.stringify(GUSTO_PAYMENTS))
+            const r6 = await redis.hset(sandbox_name, 'pay_statement', JSON.stringify(GUSTO_PAYSTATEMENTS))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2 && r3 && r4 && r5 && r6) return true
+            else return false
         }
 
 
     }
 
-    function createBambooHR(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean) {
+    async function createBambooHR(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean): Promise<boolean> {
         if (dynamic) {
             const newBambooSandbox = createSandbox(PROVIDER_COMPATIBILITY.bamboohr, employee_amount, company_id)
-            redis.hset(sandbox_name, 'company', JSON.stringify(newBambooSandbox._company))
-            redis.hset(sandbox_name, 'directory', JSON.stringify(newBambooSandbox._directory))
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(newBambooSandbox._company))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(newBambooSandbox._directory))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2) return true
+            else return false
         }
         else {
-            redis.hset(sandbox_name, 'company', JSON.stringify(BAMBOOHR_COMPANY))
-            redis.hset(sandbox_name, 'directory', JSON.stringify(BAMBOOHR_DIRECTORY))
-            redis.hset(sandbox_name, 'individual', JSON.stringify(BAMBOOHR_INDIVIDUAL))
-            redis.hset(sandbox_name, 'employment', JSON.stringify(BAMBOOHR_EMPLOYMENT))
-            redis.hset(sandbox_name, 'payment', JSON.stringify(BAMBOOHR_PAYMENTS))
-            redis.hset(sandbox_name, 'pay_statement', JSON.stringify(BAMBOOHR_PAYSTATEMENTS))
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(BAMBOOHR_COMPANY))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(BAMBOOHR_DIRECTORY))
+            const r3 = await redis.hset(sandbox_name, 'individual', JSON.stringify(BAMBOOHR_INDIVIDUAL))
+            const r4 = await redis.hset(sandbox_name, 'employment', JSON.stringify(BAMBOOHR_EMPLOYMENT))
+            const r5 = await redis.hset(sandbox_name, 'payment', JSON.stringify(BAMBOOHR_PAYMENTS))
+            const r6 = await redis.hset(sandbox_name, 'pay_statement', JSON.stringify(BAMBOOHR_PAYSTATEMENTS))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2 && r3 && r4 && r5 && r6) return true
+            else return false
         }
 
     }
 
-    function createJustworks(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean) {
+    async function createJustworks(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean): Promise<boolean> {
         if (dynamic) {
             const newJustworksSandbox = createSandbox(PROVIDER_COMPATIBILITY.justworks, employee_amount, company_id)
-            redis.hset(sandbox_name, 'company', JSON.stringify(newJustworksSandbox._company))
-            redis.hset(sandbox_name, 'directory', JSON.stringify(newJustworksSandbox._directory))
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(newJustworksSandbox._company))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(newJustworksSandbox._directory))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2) return true
+            else return false
         } else {
-            redis.hset(sandbox_name, 'company', JSON.stringify(JUSTWORKS_COMPANY))
-            redis.hset(sandbox_name, 'directory', JSON.stringify(JUSTWORKS_DIRECTORY))
-            redis.hset(sandbox_name, 'individual', JSON.stringify(JUSTWORKS_INDIVIDUAL))
-            redis.hset(sandbox_name, 'employment', JSON.stringify(JUSTWORKS_EMPLOYMENT))
-            redis.hset(sandbox_name, 'payment', JSON.stringify(JUSTWORKS_PAYMENTS))
-            redis.hset(sandbox_name, 'pay_statement', JSON.stringify(JUSTWORKS_PAYSTATEMENTS))
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(JUSTWORKS_COMPANY))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(JUSTWORKS_DIRECTORY))
+            const r3 = await redis.hset(sandbox_name, 'individual', JSON.stringify(JUSTWORKS_INDIVIDUAL))
+            const r4 = await redis.hset(sandbox_name, 'employment', JSON.stringify(JUSTWORKS_EMPLOYMENT))
+            const r5 = await redis.hset(sandbox_name, 'payment', JSON.stringify(JUSTWORKS_PAYMENTS))
+            const r6 = await redis.hset(sandbox_name, 'pay_statement', JSON.stringify(JUSTWORKS_PAYSTATEMENTS))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2 && r3 && r4 && r5 && r6) return true
+            else return false
         }
 
     }
 
-    function createWorkday(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean) {
+    async function createWorkday(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean): Promise<boolean> {
         if (dynamic) {
             const newWorkdaySandbox = createSandbox(PROVIDER_COMPATIBILITY.workday, employee_amount, company_id)
-            redis.hset(sandbox_name, 'company', `{
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(`{
                 "statusCode": 501,
                 "status": 501,
                 "code": 501,
                 "message": "Not Implemented",
                 "name": "not_implemented_error"
-              }`)
-            redis.hset(sandbox_name, 'directory', JSON.stringify(newWorkdaySandbox._directory))
+              }`))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(newWorkdaySandbox._directory))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2) return true
+            else return false
         } else {
-            redis.hset(sandbox_name, 'company', JSON.stringify(WORKDAY_COMPANY))
-            redis.hset(sandbox_name, 'directory', JSON.stringify(WORKDAY_DIRECTORY))
-            redis.hset(sandbox_name, 'individual', JSON.stringify(WORKDAY_INDIVIDUAL))
-            redis.hset(sandbox_name, 'employment', JSON.stringify(WORKDAY_EMPLOYMENT))
-            redis.hset(sandbox_name, 'payment', JSON.stringify(WORKDAY_PAYMENTS))
-            redis.hset(sandbox_name, 'pay_statement', JSON.stringify(WORKDAY_PAYSTATEMENTS))
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(WORKDAY_COMPANY))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(WORKDAY_DIRECTORY))
+            const r3 = await redis.hset(sandbox_name, 'individual', JSON.stringify(WORKDAY_INDIVIDUAL))
+            const r4 = await redis.hset(sandbox_name, 'employment', JSON.stringify(WORKDAY_EMPLOYMENT))
+            const r5 = await redis.hset(sandbox_name, 'payment', JSON.stringify(WORKDAY_PAYMENTS))
+            const r6 = await redis.hset(sandbox_name, 'pay_statement', JSON.stringify(WORKDAY_PAYSTATEMENTS))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2 && r3 && r4 && r5 && r6) return true
+            else return false
         }
     }
 
-    function createPaychexFlex(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean) {
+    async function createPaychexFlex(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean): Promise<boolean> {
         if (dynamic) {
             const newPaychexSandbox = createSandbox(PROVIDER_COMPATIBILITY.paychex_flex, employee_amount, company_id)
-            redis.hset(sandbox_name, 'company', JSON.stringify(newPaychexSandbox._company))
-            redis.hset(sandbox_name, 'directory', JSON.stringify(newPaychexSandbox._directory))
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(newPaychexSandbox._company))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(newPaychexSandbox._directory))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2) return true
+            else return false
         } else {
-            redis.hset(sandbox_name, 'company', JSON.stringify(PAYCHEXFLEX_COMPANY))
-            redis.hset(sandbox_name, 'directory', JSON.stringify(PAYCHEXFLEX_DIRECTORY))
-            redis.hset(sandbox_name, 'individual', JSON.stringify(PAYCHEXFLEX_INDIVIDUAL))
-            redis.hset(sandbox_name, 'employment', JSON.stringify(PAYCHEXFLEX_EMPLOYMENT))
-            redis.hset(sandbox_name, 'payment', JSON.stringify(PAYCHEXFLEX_PAYMENTS))
-            redis.hset(sandbox_name, 'pay_statement', JSON.stringify(PAYCHEXFLEX_PAYSTATEMENTS))
+            // Redis will return 1 is hash field is set, 0 if hash field not set
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(PAYCHEXFLEX_COMPANY))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(PAYCHEXFLEX_DIRECTORY))
+            const r3 = await redis.hset(sandbox_name, 'individual', JSON.stringify(PAYCHEXFLEX_INDIVIDUAL))
+            const r4 = await redis.hset(sandbox_name, 'employment', JSON.stringify(PAYCHEXFLEX_EMPLOYMENT))
+            const r5 = await redis.hset(sandbox_name, 'payment', JSON.stringify(PAYCHEXFLEX_PAYMENTS))
+            const r6 = await redis.hset(sandbox_name, 'pay_statement', JSON.stringify(PAYCHEXFLEX_PAYSTATEMENTS))
+
+            // Returns a Promise<boolean> containing if they sandbox was created properly or not
+            if (r1 && r2 && r3 && r4 && r5 && r6) return true
+            else return false
         }
     }
 

@@ -39,32 +39,37 @@ export default async function createSandbox(
 
       switch (provider) {
         case 'gusto': {
-          console.log("Creating Gusto sandbox")
-          providers.createGusto(sandbox_name, employee_amount, company_id, dynamic)
+          console.log("Creating Gusto sandbox");
+          const sandbox = await providers.createGusto(sandbox_name, employee_amount, company_id, dynamic);
+          if (!sandbox) throw Error('Error creating sandbox environment')
           break;
         }
         case 'bamboohr': {
           console.log("Creating BambooHR sandbox")
-          providers.createBambooHR(sandbox_name, employee_amount, company_id, dynamic)
+          const sandbox = await providers.createBambooHR(sandbox_name, employee_amount, company_id, dynamic);
+          if (!sandbox) throw Error('Error creating sandbox environment')
           break;
         }
         case 'paychex_flex': {
           console.log("Creating Paychex Flex sandbox")
-          providers.createPaychexFlex(sandbox_name, employee_amount, company_id, dynamic)
+          const sandbox = await providers.createPaychexFlex(sandbox_name, employee_amount, company_id, dynamic);
+          if (!sandbox) throw Error('Error creating sandbox environment')
           break;
         }
         case 'justworks': {
           console.log("Creating Justworks sandbox")
-          providers.createJustworks(sandbox_name, employee_amount, company_id, dynamic)
+          const sandbox = await providers.createJustworks(sandbox_name, employee_amount, company_id, dynamic);
+          if (!sandbox) throw Error('Error creating sandbox environment')
           break;
         }
         case 'workday': {
           console.log("Creating Workday sandbox")
-          providers.createWorkday(sandbox_name, employee_amount, company_id, dynamic)
+          const sandbox = await providers.createWorkday(sandbox_name, employee_amount, company_id, dynamic);
+          if (!sandbox) throw Error('Error creating sandbox environment')
           break;
         }
         default: {
-          return res.status(400).json({ msg: "Invalid provider name" })
+          return res.status(400).json("Invalid provider name")
         }
       }
 
@@ -72,32 +77,11 @@ export default async function createSandbox(
     }
     catch (error) {
       console.error(error);
-      return res.status(500).json({ msg: "Error creating sandbox environment" })
+      return res.status(500).json("Error creating sandbox environment")
     }
   }
 
-  return res.status(405).json({ msg: "Method not implemented." })
-}
-
-
-type Individual = {
-  id: string;
-  ssn: string;
-  firstName: string;
-  lastName: string;
-  middleName: string | null;
-  gender: string | null;
-  dob: string;
-  personalPhoneNumber: string;
-  personalEmail?: string;
-  workEmail: string;
-  isActive: boolean;
-  homeLine1: string;
-  homeLine2: string | null;
-  homeCity: string;
-  homeState: string;
-  homeCountry: string;
-  homePostalCode: string;
+  return res.status(405).json("Method not implemented.")
 }
 
 
