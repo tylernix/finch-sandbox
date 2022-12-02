@@ -13,6 +13,7 @@ export default async function createSandbox(
   if (req.method === 'POST') {
     try {
       const { provider, number_of_employees, products, manual } = req.body
+      console.log("testing")
       const dynamic = req.body.dynamic ?? false
       if (!provider)
         return res.status(400).json({ msg: "Provider is required" })
@@ -29,6 +30,8 @@ export default async function createSandbox(
         product === 'ssn'
       ))
         return res.status(400).json("Invalid product scope type")
+
+      if (containsXSS(provider)) return res.status(500).json("Nice. That will ruin someone's day.")
 
       const access_token = 'sandbox-token-' + uuidv4()
       const company_id = uuidv4()
@@ -82,6 +85,14 @@ export default async function createSandbox(
   }
 
   return res.status(405).json("Method not implemented.")
+}
+
+const containsXSS = (text: String) => {
+  if (text.includes('<script>')) {
+    return true
+  }
+
+  return false
 }
 
 
