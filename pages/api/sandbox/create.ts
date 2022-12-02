@@ -28,7 +28,7 @@ export default async function createSandbox(
         product === 'benefits' ||
         product === 'ssn'
       ))
-        return res.status(400).json({ msg: "Invalid product scope type" })
+        return res.status(400).json("Invalid product scope type")
 
       const access_token = 'sandbox-token-' + uuidv4()
       const company_id = uuidv4()
