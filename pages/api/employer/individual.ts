@@ -3,16 +3,11 @@ import { validToken, getTokenFromReqAuthHeader } from '@/util/access-token'
 import redis from '@/util/redis'
 import { Individual, NotImplementedError } from 'types/finch'
 
-
 type individualIdRequests = {
-  requests: {
-    individual_id: string
-  }[]
-}
-type individualIdResponse = {
-  individual_id: string,
-  code: number,
-  body: Individual
+  individual_id: string
+}[]
+type optionsRequests = {
+  include: string[]
 }
 
 export default async function individual(
@@ -21,15 +16,10 @@ export default async function individual(
 ) {
   console.log(req.method + " /api/employer/individual")
   const token = getTokenFromReqAuthHeader(req)
-  const body: individualIdRequests = req.body
+  const individualIdRequests: individualIdRequests = req.body.requests
+  const optionsRequests: optionsRequests = req.body.options
 
-  if (!body.requests || body.requests.length === 0)
-    return res.status(400).json({ data: 'Individual Id requests required' })
-
-  const requestedIds = body.requests.map(individual => {
-    return individual.individual_id
-  })
-
+  // Validate token first
   if (!token)
     return res.status(400).json("Access token required")
   if (Array.isArray(token))
@@ -42,6 +32,20 @@ export default async function individual(
   if (!isAuthorized)
     return res.status(401).json('Unauthorized: Insufficient product scopes')
 
+  // Validate individual Id requests
+  if (!individualIdRequests || individualIdRequests.length === 0)
+    return res.status(400).json({ data: 'Individual Id requests required' })
+
+  const requestedIds = individualIdRequests.map(individual => {
+    return individual.individual_id
+  })
+
+  // Validate options in request
+  let includeSSN = false
+  if (optionsRequests && optionsRequests.include.length > 0)
+    includeSSN = true
+
+
   if (req.method === 'POST') {
     try {
       const sandbox = await redis.get(token)
@@ -53,16 +57,25 @@ export default async function individual(
       //console.log(requestedIds)
 
       let response: any = [];
-      const parsedIndividuals: individualIdResponse[] | NotImplementedError = JSON.parse(individuals);
+      const parsedIndividuals: Individual[] | NotImplementedError = JSON.parse(individuals);
+
+      //console.log(parsedIndividuals)
 
       // If parsedIndividuals is of type notImplementedError, then return 501
       if ("status" in parsedIndividuals)
         return res.status(501).json(parsedIndividuals);
 
       requestedIds.forEach(id => {
-        const match: individualIdResponse | undefined = parsedIndividuals.find(individual => individual.individual_id === id)
-        if (match)
-          response.push(match)
+        const match: Individual | undefined = parsedIndividuals.find(individual => individual.id === id)
+        if (match) {
+          if (!includeSSN) delete match.ssn
+
+          response.push({
+            individual_id: id,
+            code: 200,
+            body: match
+          })
+        }
         else
           response.push(
             {

@@ -77,3 +77,12 @@ To learn more about Finch, take a look at the following resources:
 - [Finch Documentation](https://developer.tryfinch.com/) - learn about Finch's features and API.
 - [List of integrations](https://tryfinch.com/developers/integrations) - an interactive list of Finch's provider integrations
 - [Finch Whitepapers](https://tryfinch.com/resources/whitepapers) - detailed and rigorous employment research to help you make the right decisions
+
+## TODO
+
+- handle edge case where a field doesn't show up in one endpoint but may show up in another endpoint (no manager in /company, but manager in /dicrectory or /employment )
+- not faking middle name, just assigned 'null'
+
+api scenario generator inputs
+[x] number of employees
+[ ] custom_fields names

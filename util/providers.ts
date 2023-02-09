@@ -1,6 +1,6 @@
 import redis from '@/util/redis'
 import { createSandbox } from '@/util/mock'
-import { PROVIDER_COMPATIBILITY } from './constants'
+import { PROVIDER_COMPATIBILITY, PROVIDER_COMPATIBILITY_NEW } from './constants'
 import {
     GUSTO_COMPANY, GUSTO_DIRECTORY, GUSTO_INDIVIDUAL, GUSTO_EMPLOYMENT, GUSTO_PAYMENTS, GUSTO_PAYSTATEMENTS,
     BAMBOOHR_COMPANY, BAMBOOHR_DIRECTORY, BAMBOOHR_INDIVIDUAL, BAMBOOHR_EMPLOYMENT, BAMBOOHR_PAYMENTS, BAMBOOHR_PAYSTATEMENTS,
@@ -12,10 +12,11 @@ import {
 export default function Providers() {
     async function createGusto(sandbox_name: string, employee_amount: number, company_id: string, dynamic: boolean): Promise<boolean> {
         if (dynamic) {
-            const newGustoSandbox = createSandbox(PROVIDER_COMPATIBILITY.gusto, employee_amount, company_id)
+            const newGustoSandbox = createSandbox(employee_amount, company_id)
+            //const newGustoSandbox = filterSandbox(PROVIDER_COMPATIBILITY.gusto, sandbox)
 
             // CUSTOM GUSTO LOGIC to mask account numbers to only show the last 4 digits
-            newGustoSandbox._company?.accounts?.forEach(account => {
+            newGustoSandbox.company?.accounts?.forEach(account => {
                 if (account.account_number != null) {
                     let mask = ''
                     for (let i = 0; i < account.account_number.length - 4; i++) {
@@ -26,11 +27,13 @@ export default function Providers() {
             })
 
             // Redis will return 1 is hash field is set, 0 if hash field not set
-            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(newGustoSandbox._company))
-            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(newGustoSandbox._directory))
+            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(newGustoSandbox.company))
+            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(newGustoSandbox.directory))
+            const r3 = await redis.hset(sandbox_name, 'individual', JSON.stringify(newGustoSandbox.individual))
+            const r4 = await redis.hset(sandbox_name, 'employment', JSON.stringify(newGustoSandbox.employment))
 
             // Returns a Promise<boolean> containing if they sandbox was created properly or not
-            if (r1 && r2) return true
+            if (r1 && r2 && r3 && r4) return true
             else return false
 
         } else {

@@ -1,16 +1,18 @@
 type SandboxGlobal = {
+  employeeCount: number,
+  companyId: string,
   companyName: string,
-  companyEmail: string,
-  companyDepartments: Department[] | null,
-  companyLocations: Location[] | null
+  companyEmailDomain: string,
+  companyDepartments: Department[],
+  companyLocations: Location[]
 }
 type Sandbox = {
-  _company: Company | null,
-  _directory: Person[],
-  _individuals: Individual[],
-  _employments: Employment[],
-  _payments: Payment[] | null,
-  _payStatements: PayStatement[] | null
+  company: Company,
+  directory: Person[],
+  individual: Individual[],
+  employment: Employment[],
+  payments: Payment[],
+  payStatements: PayStatement[]
 }
 
 export interface Provider {
@@ -22,7 +24,7 @@ export interface Provider {
 }
 
 export interface Department {
-  name: string | null;
+  name: string;
   parent: {
     name: string | null;
   }
@@ -59,12 +61,13 @@ export interface Person {
 
 export interface Individual {
   id: string;
-  ssn: string;
+  ssn?: string;
   firstName: string;
   lastName: string;
   middleName: string | null;
   preferredName: string | null;
   gender: string | null;
+  ethnicity: string | null;
   dob: string;
   residence: Location | null;
   emails: {
@@ -103,12 +106,16 @@ export interface Employment {
     amount: number | null;
     currency: string | null;
     effectiveDate: string | null;
-  }
+  };
   incomeHistory: {
-    incomeType: string | null;
-    incomeAmount: number | null;
-    incomeCurrency: string | null;
+    unit: string | null;
+    amount: number | null;
+    currency: string | null;
     effectiveDate: string | null;
+  }[];
+  customFields: {
+    name: string | null;
+    value: number | string | boolean
   }[];
 }
 

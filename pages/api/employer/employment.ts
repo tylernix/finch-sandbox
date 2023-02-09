@@ -5,15 +5,8 @@ import { Employment, NotImplementedError } from 'types/finch'
 
 
 type individualIdRequests = {
-  requests: {
-    individual_id: string
-  }[]
-}
-type employeeResponse = {
-  individual_id: string,
-  code: number,
-  body: Employment
-}
+  individual_id: string
+}[]
 
 export default async function employment(
   req: NextApiRequest,
@@ -21,15 +14,9 @@ export default async function employment(
 ) {
   console.log(req.method + " /api/employer/employment")
   const token = getTokenFromReqAuthHeader(req)
-  const body: individualIdRequests = req.body
+  const individualIdRequests: individualIdRequests = req.body.requests
 
-  if (!body.requests || body.requests.length === 0)
-    return res.status(400).json('Individual Id requests required')
-
-  const requestedIds = body.requests.map(individual => {
-    return individual.individual_id
-  })
-
+  // Validate token first
   if (!token)
     return res.status(400).json("Access token required")
   if (Array.isArray(token))
@@ -38,9 +25,17 @@ export default async function employment(
   const isValidToken = await validToken(token)
   if (!isValidToken)
     return res.status(401).json('Unauthorized: Invalid access token')
-  const isAuthorized = await redis.sismember(`products:${token}`, 'employment')
+  const isAuthorized = await redis.sismember(`products:${token}`, 'individual')
   if (!isAuthorized)
     return res.status(401).json('Unauthorized: Insufficient product scopes')
+
+  // Validate individual Id requests
+  if (!individualIdRequests || individualIdRequests.length === 0)
+    return res.status(400).json({ data: 'Individual Id requests required' })
+
+  const requestedIds = individualIdRequests.map(individual => {
+    return individual.individual_id
+  })
 
   if (req.method === 'POST') {
     try {
@@ -53,16 +48,20 @@ export default async function employment(
       //console.log(requestedIds)
 
       let response: any = [];
-      const parsedEmployees: employeeResponse[] | NotImplementedError = JSON.parse(employees);
+      const parsedEmployees: Employment[] | NotImplementedError = JSON.parse(employees);
 
       // If parsedEmployees is of type notImplementedError, then return 501
       if ("status" in parsedEmployees)
         return res.status(501).json(parsedEmployees);
 
       requestedIds.forEach(id => {
-        const match: employeeResponse | undefined = parsedEmployees.find(employee => employee.individual_id === id)
+        const match: Employment | undefined = parsedEmployees.find(employee => employee.id === id)
         if (match)
-          response.push(match)
+          response.push({
+            individual_id: id,
+            code: 200,
+            body: match
+          })
         else
           response.push(
             {

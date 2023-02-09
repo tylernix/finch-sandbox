@@ -28,6 +28,16 @@ export interface Company_Fields {
     accounts: Accounts_Fields;
 }
 
+export interface Directory_Fields {
+    id: boolean;
+    first_name: boolean;
+    middle_name: boolean;
+    last_name: boolean;
+    manager: Manager_Fields;
+    department: Ent_Fields;
+    is_active: boolean;
+}
+
 export interface Accounts_Fields {
     routing_number: boolean;
     account_name: boolean;
@@ -59,11 +69,6 @@ export interface Locations_Fields {
     country: boolean;
 }
 
-export interface Directory_Fields {
-    paging: Paging_Fields;
-    individuals: Individuals_Fields;
-}
-
 export interface Individuals_Fields {
     id: boolean;
     first_name: boolean;
@@ -73,6 +78,8 @@ export interface Individuals_Fields {
     department: Ent_Fields;
     is_active: boolean;
 }
+
+
 
 export interface Manager_Fields {
     id: boolean;

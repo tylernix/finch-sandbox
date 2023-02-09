@@ -14,10 +14,12 @@ export default async function createSandbox(
     try {
       const { provider, number_of_employees, products, manual } = req.body
       const dynamic = req.body.dynamic ?? false
+
+      // Validation
       if (!provider)
-        return res.status(400).json({ msg: "Provider is required" })
+        return res.status(400).json("Provider is required")
       if (!products || products.length == 0)
-        return res.status(400).json({ msg: "Products is required" })
+        return res.status(400).json("Products is required")
       if (!products.every((product: string) =>
         product === 'company' ||
         product === 'directory' ||
@@ -29,6 +31,9 @@ export default async function createSandbox(
         product === 'ssn'
       ))
         return res.status(400).json("Invalid product scope type")
+
+      if (number_of_employees > 1000 || number_of_employees <= 0)
+        return res.status(400).json("The number of employees must be between 1 and 1000.")
 
       const access_token = 'sandbox-token-' + uuidv4()
       const company_id = uuidv4()
