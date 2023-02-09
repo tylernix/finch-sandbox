@@ -13,6 +13,7 @@ export default async function createSandbox(
   if (req.method === 'POST') {
     try {
       const { provider, number_of_employees, products, manual } = req.body
+      console.log("testing")
       const dynamic = req.body.dynamic ?? false
 
       // Validation
@@ -87,6 +88,14 @@ export default async function createSandbox(
   }
 
   return res.status(405).json("Method not implemented.")
+}
+
+const containsXSS = (text: String) => {
+  if (text.includes('<script>')) {
+    return true
+  }
+
+  return false
 }
 
 
