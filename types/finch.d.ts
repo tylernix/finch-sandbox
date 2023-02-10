@@ -1,5 +1,5 @@
 type SandboxGlobal = {
-  employeeCount: number,
+  employeeSize: number,
   companyId: string,
   companyName: string,
   companyEmailDomain: string,
@@ -103,7 +103,7 @@ export interface Employment {
   };
   income: {
     unit: string | null;
-    amount: number | null;
+    amount: number;
     currency: string | null;
     effectiveDate: string | null;
   };

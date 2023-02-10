@@ -80,9 +80,16 @@ To learn more about Finch, take a look at the following resources:
 
 ## TODO
 
-- handle edge case where a field doesn't show up in one endpoint but may show up in another endpoint (no manager in /company, but manager in /dicrectory or /employment )
-- not faking middle name, just assigned 'null'
+- filter fields by provider compatibility
+- double check income history effective date is working properly
 
-api scenario generator inputs
-[x] number of employees
+## Notes
+
+- only creates 2 year of historical pay data
+
+## future api scenario generator inputs
+
+[x] number of employees (limited to 1 to 1000 employees)
 [ ] custom_fields names
+[ ] contractor converting to full time employee
+[ ] send a company id to generate next payroll

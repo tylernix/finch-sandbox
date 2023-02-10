@@ -62,11 +62,11 @@ import moment from 'moment'
 
 // }
 
-function createSandbox(employeeCount: number, companyId: string): Sandbox {
+function createSandbox(employeeSize: number, companyId: string): Sandbox {
     const companyName = faker.company.name()
 
     const _globals: SandboxGlobal = {
-        employeeCount: employeeCount,
+        employeeSize: employeeSize,
         companyId: companyId,
         companyName: companyName,
         companyEmailDomain: companyName.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s{1,}/g, '-').toLocaleLowerCase() + ".com",
@@ -76,14 +76,15 @@ function createSandbox(employeeCount: number, companyId: string): Sandbox {
 
     const company = createCompany(_globals)
     var { directory, individuals, employments } = createOrganization(_globals)
+    var { payments, payStatements } = createPayments(_globals, employments)
 
     const _sandbox: Sandbox = {
         company: company,
         directory: directory,
         individual: individuals,
         employment: employments,
-        payments: [],
-        payStatements: []
+        payments: payments,
+        payStatements: payStatements
 
     }
 
@@ -120,7 +121,7 @@ function createOrganization(_globals: SandboxGlobal): {
     let individuals: Individual[] = []
     let employments: Employment[] = []
 
-    console.log("employee count: " + _globals.employeeCount)
+    console.log("initial company employee size: " + _globals.employeeSize)
     const managers = directoryUtil.mockManagers(_globals)
 
     // add managers to the directory
@@ -128,12 +129,13 @@ function createOrganization(_globals: SandboxGlobal): {
     individuals = managers.individuals
     employments = managers.employments
 
+    console.log("manager size: " + directory.length)
+    console.log("employee size: " + (_globals.employeeSize - directory.length))
 
     // subtract managers from total employeeCount 
-    _globals.employeeCount -= directory.length
-    console.log("employee count: " + _globals.employeeCount)
+    _globals.employeeSize -= directory.length
 
-    for (let i = 0; i < _globals.employeeCount; i++) {
+    for (let i = 0; i < _globals.employeeSize; i++) {
         let manager: Person = getRandomElement(managers.persons)
         const { person, individual, employment } = directoryUtil.mockPerson(manager.departmentName, manager.id, _globals)
         managers.persons.push(person)
@@ -144,175 +146,56 @@ function createOrganization(_globals: SandboxGlobal): {
 
 }
 
-var directoryUtil = {
-    mockManagers(_globals: SandboxGlobal): {
-        persons: Person[],
-        individuals: Individual[],
-        employments: Employment[]
-    } {
-        console.log("Directory: Creating Managers")
+function createPayments(_globals: SandboxGlobal, employees: Employment[]): {
+    payments: Payment[],
+    payStatements: PayStatement[],
+} {
 
-        // Get average manager sizes of company (around 10% to 20%)
-        const managerCountLow = Math.floor(_globals.employeeCount * 0.1)
-        const managerCountHigh = Math.floor(_globals.employeeCount * 0.2)
-        // Getting a random integer between two values, inclusive at both max and min
-        const min = Math.ceil(managerCountLow)
-        const max = Math.floor(managerCountHigh)
-        const numOfManagers = Math.floor(Math.random() * (max - min + 1) + min) + 1 // Always create at least one manager
 
-        // for only child-departments (i.e. they have a parent department), create a few managers.
-        const childDepartments: Department[] = []
-        _globals.companyDepartments.forEach(dept => {
-            if (dept.parent.name) childDepartments.push(dept)
-        })
+    // Reusable fields
+    let payments: Payment[] = []
+    let payStatements: PayStatement[] = []
+    let totalCompanyDebit = 0;
+    let totalGrossPay = 0;
+    let totalNetPay = 0;
+    let totalEmployerTaxes = 0;
+    let totalEmployeeTaxes = 0;
 
-        // Create random fake managers
-        // Right now, this manager-to-employee structure is dependent on createDepartments tree levels.
-        let managers: {
-            persons: Person[],
-            individuals: Individual[],
-            employments: Employment[]
-        } = {
-            persons: [],
-            individuals: [],
-            employments: []
-        }
-        for (let i = 0; i < numOfManagers; i++) {
-            const { person, individual, employment } = directoryUtil.mockPerson(getRandomElement(childDepartments).name, null, _globals)
-            managers.persons.push(person)
-            managers.individuals.push(individual)
-            managers.employments.push(employment)
-        }
+    // Generate pay data for two years from today
+    const today = moment()
+    const twoYearsAgo = moment().subtract('2', 'years')
 
-        return managers
-    },
-    mockPerson(departmentName: string, managerId: string | null, _globals: SandboxGlobal): {
-        person: Person;
-        individual: Individual;
-        employment: Employment;
-    } {
-        //console.log("Directory: Creating Person")
+    // unique generate payroll for this month depending on day of month
+    //const paymentId = faker.datatype.uuid()
+    console.log("this month payroll: " + today.toDate())
 
-        // Resuable fields
-        const individualId = faker.datatype.uuid()
-        const gender = faker.name.sexType()
-        const firstName = faker.name.firstName(gender)
-        const middleName = faker.name.middleName(gender)
-        const lastName = faker.name.lastName()
-        const isActive = (managerId) ? faker.datatype.boolean() : true // if manager, always set to active
-        const startDate = faker.date.past(10) // create a random start_date within the last 10 years
-        const endDate = (isActive) ? null : faker.date.between(startDate, moment().toDate()) // if not active, create an end_date between start_date and now
-        const yearsOfService = (isActive) ? moment(moment()).diff(startDate, 'years') : moment(endDate).diff(startDate, 'years')
-        const dob = faker.date.birthdate({ min: 20, max: 70, mode: 'age' })
-        const employmentType: 'employee' | 'contractor' = (managerId) ? getRandomElement(['employee', 'contractor']) : 'employee'
-        const currentIncome = Number(faker.finance.amount(5000000, 30000000, 0)) // return yearly income amount in USD cents between $50,000.00 and $300,000.00
-        const effectiveDateOfCurrentIncome = (isActive && yearsOfService >= 1) ? faker.date.recent(365) : faker.date.recent(365, endDate?.toDateString())
+    // generate payroll the same way for all other months starting at the previous month
+    today.subtract(1, 'month')
+    while (today.isAfter(twoYearsAgo)) {
+        console.log("Generating pay data for month: " + today.year() + "-" + today.month())
 
-        // Create Person stub
-        const person: Person = {
-            id: individualId,
-            firstName: firstName,
-            lastName: lastName,
-            middleName: middleName,
-            departmentName: departmentName,
-            manager: {
-                id: (managerId) ? managerId : null,
-            },
-            isActive: isActive,
-        }
+        // create first bi-weekly pay period (1)
+        const { payment: payment_1, payStatement: payStatement_1 } = paymentUtil.mockPayPeriod(
+            faker.datatype.uuid(),                      // payment id
+            moment([today.year(), today.month(), 1]),   // start date
+            moment([today.year(), today.month(), 15]),  // end date
+            employees
+        )
 
-        // Create Individual
-        const individual: Individual = {
-            id: individualId,
-            ssn: faker.phone.number('#########'),
-            firstName: firstName,
-            lastName: lastName,
-            middleName: middleName,
-            preferredName: null, // sometimes, generate preferred name examples, not sure how to do this with Faker
-            gender: gender,
-            ethnicity: getRandomElement([
-                "asian",
-                "white",
-                "black_or_african_american",
-                "native_hawaiian_or_pacific_islander",
-                "american_indian_or_alaska_native",
-                "hispanic_or_latino",
-                "two_or_more_races",
-                "decline_to_specify",
-                null,
-            ]),
-            dob: moment(dob).format("YYYY-MM-DD"),
-            residence: {
-                line1: faker.address.streetAddress(false),
-                line2: Math.random() ? faker.address.secondaryAddress() : null, // sometimes add a second line, sometimes not.
-                city: faker.address.city(),
-                state: faker.address.stateAbbr(),
-                postal_code: faker.address.zipCode(),
-                country: 'US',
-            },
-            // create an random size array between 1 and 4, then .map the array to return that many email objects
-            emails: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
-                const type: 'work' | 'personal' = getRandomElement(['work', 'personal'])
-                if (type === 'work') return { data: faker.internet.email(firstName, lastName, _globals.companyEmailDomain), type: type }
-                else return { data: faker.internet.email(firstName, lastName), type: type }
-            }),
-            // create an random size array between 1 and 4, then .map the array to return that many phone number objects
-            phoneNumbers: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
-                return {
-                    data: faker.phone.number('###-###-####'),
-                    type: getRandomElement(['work', 'personal', 'work', 'personal', 'work', 'personal', null]) // add 'work' and 'personal more times to decrease the likelihood of null, but could still happen.
-                }
-            })
-        }
-        // create Employment
-        const employment: Employment = {
-            id: individualId,
-            firstName: firstName,
-            lastName: lastName,
-            middleName: middleName,
-            title: faker.name.jobTitle(),
-            manager: {
-                id: (managerId) ? managerId : null,
-            },
-            startDate: moment(startDate).format("YYYY-MM-DD"),
-            endDate: (endDate) ? moment(endDate).format("YYYY-MM-DD") : null,
-            isActive: isActive,
-            classCode: faker.phone.number('####'),
-            location: getRandomElement(_globals.companyLocations),
-            employment: {
-                type: employmentType,
-                subtype: (employmentType === 'employee') ? getRandomElement(['full_time', 'part_time', null]) : getRandomElement(['full_time', 'part_time', 'intern', 'temp', 'seasonal', 'individual_contractor', null])
-            },
-            department: {
-                name: departmentName
-            },
-            income: {
-                unit: 'yearly',
-                amount: currentIncome,
-                currency: 'USD',
-                effectiveDate: moment(effectiveDateOfCurrentIncome).format("YYYY-MM-DD")
-            },
-            incomeHistory: Array.from({ length: yearsOfService }, (v, i) => i).map(x => {
-                // give 1 salary raise every year of service
-                // by decreasing income from current income amount for every year of service. 
-                // Ex: 30,000 - (30,000 * (11 / 100)) = 26,700
-                return {
-                    unit: 'yearly',
-                    amount: Math.round(currentIncome - (currentIncome * ((10 + x) / 100))),
-                    currency: 'USD',
-                    effectiveDate: moment(effectiveDateOfCurrentIncome).subtract(x + 1, 'years').format("YYYY-MM-DD")
-                }
-            }),
-            customFields: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
-                return {
-                    name: faker.lorem.word(),
-                    value: faker.lorem.words(6)
-                }
-            }),
-        }
-        moment(effectiveDateOfCurrentIncome).subtract
-        return { person, individual, employment }
+        // create last bi-weekly pay period (2)
+        const { payment: payment_2, payStatement: payStatement_2 } = paymentUtil.mockPayPeriod(
+            faker.datatype.uuid(),                                      // payment id
+            moment([today.year(), today.month(), 16]),                  // start date
+            moment([today.year(), today.month(), today.daysInMonth()]), // end date
+            employees
+        )
+
+        console.log(today.endOf('month'))
+        today.subtract(1, 'month')
     }
+
+
+    return { payments, payStatements }
 }
 
 var companyUtil = {
@@ -457,6 +340,357 @@ var companyUtil = {
     // }
 
 }
+
+var directoryUtil = {
+    mockManagers(_globals: SandboxGlobal): {
+        persons: Person[],
+        individuals: Individual[],
+        employments: Employment[]
+    } {
+        console.log("Directory: Creating Managers")
+
+        // Get average manager sizes of company (around 10% to 20%)
+        const managerCountLow = Math.floor(_globals.employeeSize * 0.1)
+        const managerCountHigh = Math.floor(_globals.employeeSize * 0.2)
+        // Getting a random integer between two values, inclusive at both max and min
+        const min = Math.ceil(managerCountLow)
+        const max = Math.floor(managerCountHigh)
+        const numOfManagers = Math.floor(Math.random() * (max - min + 1) + min) + 1 // Always create at least one manager
+
+        // for only child-departments (i.e. they have a parent department), create a few managers.
+        const childDepartments: Department[] = []
+        _globals.companyDepartments.forEach(dept => {
+            if (dept.parent.name) childDepartments.push(dept)
+        })
+
+        // Create random fake managers
+        // Right now, this manager-to-employee structure is dependent on createDepartments tree levels.
+        let managers: {
+            persons: Person[],
+            individuals: Individual[],
+            employments: Employment[]
+        } = {
+            persons: [],
+            individuals: [],
+            employments: []
+        }
+        for (let i = 0; i < numOfManagers; i++) {
+            const { person, individual, employment } = directoryUtil.mockPerson(getRandomElement(childDepartments).name, null, _globals)
+            managers.persons.push(person)
+            managers.individuals.push(individual)
+            managers.employments.push(employment)
+        }
+
+        return managers
+    },
+    mockPerson(departmentName: string, managerId: string | null, _globals: SandboxGlobal): {
+        person: Person;
+        individual: Individual;
+        employment: Employment;
+    } {
+        //console.log("Directory: Creating Person")
+
+        // Resuable fields
+        const individualId = faker.datatype.uuid()
+        const gender = faker.name.sexType()
+        const firstName = faker.name.firstName(gender)
+        const middleName = faker.name.middleName(gender)
+        const lastName = faker.name.lastName()
+        const isActive = (managerId) ? faker.datatype.boolean() : true // if manager, always set to active
+        const startDate = faker.date.past(10) // create a random start_date within the last 10 years
+        const endDate = (isActive) ? null : faker.date.between(startDate, moment().toDate()) // if not active, create an end_date between start_date and now
+        const yearsOfService = (isActive) ? moment(moment()).diff(startDate, 'years') : moment(endDate).diff(startDate, 'years')
+        const dob = faker.date.birthdate({ min: 20, max: 70, mode: 'age' })
+        const employmentType: 'employee' | 'contractor' = (managerId) ? getRandomElement(['employee', 'contractor']) : 'employee'
+        const incomeType: 'yearly' | 'hourly' = (employmentType === 'contractor') ? 'hourly' : 'yearly'
+        const currentIncome = (incomeType === 'yearly')
+            ? Number(faker.finance.amount(5000000, 30000000, 0)) // return yearly income amount in USD cents between $50,000.00 and $300,000.00
+            : Number(faker.finance.amount(2000, 4000, 0)) // return hourly income amount in USD cents between $200.00 and $400.00
+        const effectiveDateOfCurrentIncome = (isActive && yearsOfService >= 1) ? faker.date.recent(365) : faker.date.recent(365, endDate?.toDateString())
+
+        // Create Person stub
+        const person: Person = {
+            id: individualId,
+            firstName: firstName,
+            lastName: lastName,
+            middleName: middleName,
+            departmentName: departmentName,
+            manager: {
+                id: (managerId) ? managerId : null,
+            },
+            isActive: isActive,
+        }
+
+        // Create Individual
+        const individual: Individual = {
+            id: individualId,
+            ssn: faker.phone.number('#########'),
+            firstName: firstName,
+            lastName: lastName,
+            middleName: middleName,
+            preferredName: null, // sometimes, generate preferred name examples, not sure how to do this with Faker
+            gender: gender,
+            ethnicity: getRandomElement([
+                "asian",
+                "white",
+                "black_or_african_american",
+                "native_hawaiian_or_pacific_islander",
+                "american_indian_or_alaska_native",
+                "hispanic_or_latino",
+                "two_or_more_races",
+                "decline_to_specify",
+                null,
+            ]),
+            dob: moment(dob).format("YYYY-MM-DD"),
+            residence: {
+                line1: faker.address.streetAddress(false),
+                line2: Math.random() ? faker.address.secondaryAddress() : null, // sometimes add a second line, sometimes not.
+                city: faker.address.city(),
+                state: faker.address.stateAbbr(),
+                postal_code: faker.address.zipCode(),
+                country: 'US',
+            },
+            // create an random size array between 1 and 4, then .map the array to return that many email objects
+            emails: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
+                const type: 'work' | 'personal' = getRandomElement(['work', 'personal'])
+                if (type === 'work') return { data: faker.internet.email(firstName, lastName, _globals.companyEmailDomain), type: type }
+                else return { data: faker.internet.email(firstName, lastName), type: type }
+            }),
+            // create an random size array between 1 and 4, then .map the array to return that many phone number objects
+            phoneNumbers: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
+                return {
+                    data: faker.phone.number('###-###-####'),
+                    type: getRandomElement(['work', 'personal', 'work', 'personal', 'work', 'personal', null]) // add 'work' and 'personal more times to decrease the likelihood of null, but could still happen.
+                }
+            })
+        }
+        // create Employment
+        const employment: Employment = {
+            id: individualId,
+            firstName: firstName,
+            lastName: lastName,
+            middleName: middleName,
+            title: faker.name.jobTitle(),
+            manager: {
+                id: (managerId) ? managerId : null,
+            },
+            startDate: moment(startDate).format("YYYY-MM-DD"),
+            endDate: (endDate) ? moment(endDate).format("YYYY-MM-DD") : null,
+            isActive: isActive,
+            classCode: faker.phone.number('####'),
+            location: getRandomElement(_globals.companyLocations),
+            employment: {
+                type: employmentType,
+                subtype: (employmentType === 'employee') ? getRandomElement(['full_time', 'part_time', null]) : getRandomElement(['full_time', 'part_time', 'intern', 'temp', 'seasonal', 'individual_contractor', null])
+            },
+            department: {
+                name: departmentName
+            },
+            income: {
+                unit: incomeType,
+                amount: currentIncome,
+                currency: 'USD',
+                effectiveDate: moment(effectiveDateOfCurrentIncome).format("YYYY-MM-DD")
+            },
+            incomeHistory: Array.from({ length: yearsOfService }, (v, i) => i).map(x => {
+                // give 1 salary raise every year of service
+                // by decreasing income from current income amount for every year of service. 
+                // Ex: 30,000 - (30,000 * (11 / 100)) = 26,700
+                // This works for hourly income as well
+                return {
+                    unit: incomeType,
+                    amount: Math.round(currentIncome - (currentIncome * ((10 + x) / 100))),
+                    currency: 'USD',
+                    effectiveDate: moment(effectiveDateOfCurrentIncome).subtract(x + 1, 'years').format("YYYY-MM-DD")
+                }
+            }),
+            customFields: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
+                return {
+                    name: faker.lorem.word(),
+                    value: faker.lorem.words(6)
+                }
+            }),
+        }
+        return { person, individual, employment }
+    }
+}
+
+var paymentUtil = {
+    mockPayPeriod(paymentId: string, startDate: moment.Moment, endDate: moment.Moment, employees: Employment[]): { payment: Payment; payStatement: PayStatement } {
+        console.log("Generating payroll for paymentId: " + paymentId)
+
+        // Reusable fields
+        let totalCompanyDebit = 0;
+        let totalGrossPay = 0;
+        let totalNetPay = 0;
+        let totalErTaxes = 0;
+        let totalEeTaxes = 0;
+        let individualIds: string[] = []
+        let individualPayStatements: PayStatement[] = []
+
+        const isEmployedDuringPayPeriod = (employee: Employment) => {
+            if (!employee.endDate) return true // they are currently employed at the company
+            return endDate.isAfter(moment(employee.startDate)) && endDate.isBefore(moment(employee.endDate))
+        }
+
+        // check which employees were employed during this pay period
+        const employeesOnPayPeriod = employees.filter(isEmployedDuringPayPeriod)
+        console.log("Employees on pay period: " + employeesOnPayPeriod.length)
+        employeesOnPayPeriod.forEach(employee => {
+
+            individualIds.push(employee.id) // record employee ids to add to current pay period
+
+            let grossPay: number;
+            let deduction = 0;
+            let contribution = 0;
+            if (employee.income.unit === 'yearly') {
+                grossPay = Math.round(employee.income.amount / 12);
+                deduction = Math.round(grossPay * 0.15);
+                contribution = getRandomElement([30000, 40000, 50000]) as number;
+            } else {
+                grossPay = Math.round(employee.income.amount * 160);
+            }
+
+            // Calculate taxes + get rid of decimal places
+            const socialSecurity = Math.round(grossPay * 0.062);
+            const medicare = Math.round(grossPay * 0.0145);
+            const fit = Math.round(grossPay * 0.2);
+            const sit = Math.round(grossPay * 0.08);
+            const eeTax = fit + sit + medicare + socialSecurity;
+            const erTax = medicare + socialSecurity;
+            const netPay = grossPay - eeTax - deduction;
+
+            // Increase the totals
+            totalGrossPay += grossPay;
+            totalNetPay += netPay;
+            totalEeTaxes += eeTax;
+            totalErTaxes += erTax;
+            totalCompanyDebit += grossPay + erTax + contribution;
+
+            const totalHours = 160;
+
+            // Build the pay statement for the individual
+            const statement: PayStatement = {
+                individualId: employee.id,
+                type: 'regular_payroll',
+                paymentMethod: 'direct_deposit',
+                grossPay,
+                netPay,
+                totalHours,
+                earnings: [
+                    {
+                        type: employee.income.unit === 'yearly' ? 'salary' : 'wage',
+                        name: 'Regular',
+                        amount: grossPay,
+                        hours: totalHours,
+                    },
+                ],
+                taxes: [
+                    {
+                        name: 'Federal Income Tax',
+                        type: 'federal',
+                        amount: fit,
+                        employer: false,
+                    },
+                    {
+                        name: 'State Income Tax',
+                        type: 'state',
+                        amount: sit,
+                        employer: false,
+                    },
+                    {
+                        name: 'Social Security',
+                        type: 'fica',
+                        amount: socialSecurity,
+                        employer: false,
+                    },
+                    {
+                        name: 'Medicare',
+                        type: 'fica',
+                        amount: medicare,
+                        employer: false,
+                    },
+                    {
+                        name: 'Social Security',
+                        type: 'fica',
+                        amount: socialSecurity,
+                        employer: true,
+                    },
+                    {
+                        name: 'Medicare',
+                        type: 'fica',
+                        amount: medicare,
+                        employer: true,
+                    },
+                ],
+                employeeDeductions: deduction
+                    ? [
+                        {
+                            name: 'Pre-Tax 401k',
+                            amount: deduction,
+                            currency: 'usd',
+                            preTax: true,
+                            type: '401k', // BenefitType._401k
+                        },
+                    ]
+                    : [],
+                employerContributions: contribution
+                    ? [
+                        {
+                            name: '401k Employer Contribution',
+                            amount: contribution,
+                            currency: 'usd',
+                            type: '401k', // BenefitType._401k
+                        },
+                    ]
+                    : [],
+            };
+
+            individualPayStatements.push(statement);
+
+        })
+
+
+        // Build the payment
+        const payment: Payment = {
+            id: paymentId,
+            startDate: `${year}-${paddedMonth}-01`,
+            endDate: `${year}-${paddedMonth}-${numDays}`,
+            payDate: payDate.format('YYYY-MM-DD'),
+            debitDate: debitDate.format('YYYY-MM-DD'),
+            companyDebit: totalCompanyDebit,
+            grossPay: totalGrossPay,
+            netPay: totalNetPay,
+            employerTaxes: totalErTaxes,
+            employeeTaxes: totalEeTaxes,
+            individualIds,
+        }
+
+        // Add individualPayStatements to payStatement
+
+        return { payment, payStatement }
+
+        /*
+export interface Payment {
+id: string;
+pay_period: {
+start_date: string;
+end_date: string;
+}
+pay_date: string;
+debit_date: string;
+company_debit: Currency;
+gross_pay: Currency;
+net_pay: Currency;
+employer_taxes: Currency;
+employee_taxes: Currency;
+individualIds: string[];
+}
+*/
+    }
+}
+
+
 
 
 

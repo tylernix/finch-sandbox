@@ -27,10 +27,10 @@ export default function Providers() {
             })
 
             // Redis will return 1 is hash field is set, 0 if hash field not set
-            const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(newGustoSandbox.company))
-            const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(newGustoSandbox.directory))
-            const r3 = await redis.hset(sandbox_name, 'individual', JSON.stringify(newGustoSandbox.individual))
-            const r4 = await redis.hset(sandbox_name, 'employment', JSON.stringify(newGustoSandbox.employment))
+            //const r1 = await redis.hset(sandbox_name, 'company', JSON.stringify(newGustoSandbox.company))
+            //const r2 = await redis.hset(sandbox_name, 'directory', JSON.stringify(newGustoSandbox.directory))
+            //const r3 = await redis.hset(sandbox_name, 'individual', JSON.stringify(newGustoSandbox.individual))
+            //const r4 = await redis.hset(sandbox_name, 'employment', JSON.stringify(newGustoSandbox.employment))
 
             // Returns a Promise<boolean> containing if they sandbox was created properly or not
             if (r1 && r2 && r3 && r4) return true

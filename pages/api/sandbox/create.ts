@@ -12,7 +12,7 @@ export default async function createSandbox(
 
   if (req.method === 'POST') {
     try {
-      const { provider, number_of_employees, products, manual } = req.body
+      const { provider, employee_size, products, manual } = req.body
       console.log("testing")
       const dynamic = req.body.dynamic ?? false
 
@@ -33,15 +33,15 @@ export default async function createSandbox(
       ))
         return res.status(400).json("Invalid product scope type")
 
-      if (number_of_employees > 1000 || number_of_employees <= 0)
-        return res.status(400).json("The number of employees must be between 1 and 1000.")
+      if (employee_size > 1000 || employee_size <= 0)
+        return res.status(400).json("Employee size must be between 1 and 1000.")
 
       const access_token = 'sandbox-token-' + uuidv4()
       const company_id = uuidv4()
       const sandbox_name = `sandbox:${company_id}:${provider}`
       await redis.set(access_token, sandbox_name)
       products.forEach(async (product: string) => await redis.sadd(`products:${access_token}`, product))
-      const employee_amount: number = number_of_employees ?? 10
+      const employee_amount: number = employee_size ?? 10
 
       switch (provider) {
         case 'gusto': {
