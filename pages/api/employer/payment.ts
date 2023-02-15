@@ -38,10 +38,14 @@ export default async function payment(
       const sandbox = await redis.get(token)
       const payments = sandbox !== null ? await redis.hget(sandbox, 'payment') : ''
 
+
       if (payments == null)
         throw Error("Error getting payment information.")
 
       const parsedPayments: Payment[] | NotImplementedError = JSON.parse(payments);
+
+      //console.log(parsedPayments)
+
 
       // If parsedPayment is of type notImplementedError, then return 501
       if ("status" in parsedPayments)
@@ -50,8 +54,8 @@ export default async function payment(
       const response: Payment[] = parsedPayments.filter(payment => {
         const requestedStartDate = new Date(start_date)
         const requestedEndDate = new Date(end_date)
-        const paymentStartDate = new Date(payment.pay_period.start_date)
-        const paymentEndDate = new Date(payment.pay_period.end_date)
+        const paymentStartDate = new Date(payment.payPeriod.startDate)
+        const paymentEndDate = new Date(payment.payPeriod.endDate)
         return paymentStartDate >= requestedStartDate && paymentEndDate <= requestedEndDate
       })
 

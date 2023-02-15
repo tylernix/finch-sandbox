@@ -1,24 +1,11 @@
 import { faker } from '@faker-js/faker'
 import company from 'pages/api/employer/company'
-import { SandboxGlobal, Sandbox, Company, Department, Provider, Location, Account, Person, Individual, Employment, Payment, PayStatement } from 'types/finch'
+import { SandboxGlobal, Sandbox, Company, Department, Provider, Location, Account, Person, Individual, Employment, Payment, PayStatement, Deduction, Contribution, Tax, Earning } from 'types/finch'
 import { Provider_Fields, Company_Fields, Directory_Fields, Accounts_Fields, Departments_Fields, Locations_Fields, } from 'types/finch-compatibility'
 import moment from 'moment'
 
-// type SandboxGlobal = {
-//     companyId: string,
-//     companyName: string,
-//     companyEmail: string,
-//     companyDefaultDepartments: Department[],
-//     companyDefaultLocations: Location[]
-// }
-// type Sandbox = {
-//     company: Company,
-//     directory: Person[],
-//     individuals: Individual[],
-//     employments: Employment[],
-//     payments: Payment[],
-//     payStatements: PayStatement[]
-// }
+// TODO: Set random default Finch fields to use like sample deduction names or employee types so that they apply across the whole employer creation consistently but change with every new company created.
+
 
 // function filterSandboxByProvider(sandbox: Sandbox, provider: Provider_Fields,): Sandbox {
 //     // const _sandbox: SandboxGlobal = {
@@ -61,6 +48,7 @@ import moment from 'moment'
 //     //return { _company, _directory, _individuals, _employments, _payments, _payStatements }
 
 // }
+
 
 function createSandbox(employeeSize: number, companyId: string): Sandbox {
     const companyName = faker.company.name()
@@ -121,7 +109,7 @@ function createOrganization(_globals: SandboxGlobal): {
     let individuals: Individual[] = []
     let employments: Employment[] = []
 
-    console.log("initial company employee size: " + _globals.employeeSize)
+    console.log("Directory: initial company employee size: " + _globals.employeeSize)
     const managers = directoryUtil.mockManagers(_globals)
 
     // add managers to the directory
@@ -129,8 +117,8 @@ function createOrganization(_globals: SandboxGlobal): {
     individuals = managers.individuals
     employments = managers.employments
 
-    console.log("manager size: " + directory.length)
-    console.log("employee size: " + (_globals.employeeSize - directory.length))
+    console.log("Directory: manager size: " + directory.length)
+    console.log("Directory: employee size: " + (_globals.employeeSize - directory.length))
 
     // subtract managers from total employeeCount 
     _globals.employeeSize -= directory.length
@@ -150,16 +138,14 @@ function createPayments(_globals: SandboxGlobal, employees: Employment[]): {
     payments: Payment[],
     payStatements: PayStatement[],
 } {
-
-
     // Reusable fields
     let payments: Payment[] = []
     let payStatements: PayStatement[] = []
-    let totalCompanyDebit = 0;
-    let totalGrossPay = 0;
-    let totalNetPay = 0;
-    let totalEmployerTaxes = 0;
-    let totalEmployeeTaxes = 0;
+    // let totalCompanyDebit = 0;
+    // let totalGrossPay = 0;
+    // let totalNetPay = 0;
+    // let totalEmployerTaxes = 0;
+    // let totalEmployeeTaxes = 0;
 
     // Generate pay data for two years from today
     const today = moment()
@@ -167,33 +153,43 @@ function createPayments(_globals: SandboxGlobal, employees: Employment[]): {
 
     // unique generate payroll for this month depending on day of month
     //const paymentId = faker.datatype.uuid()
-    console.log("this month payroll: " + today.toDate())
+    console.log("Payment: this month payroll: " + today.toDate())
 
-    // generate payroll the same way for all other months starting at the previous month
+    // generate payroll the same way for all other months starting with the previous month
+    // Example: if today is January 17, start generating regular payroll in February = Feb 1-15 & Feb 16-28, then repeat for two years.
     today.subtract(1, 'month')
     while (today.isAfter(twoYearsAgo)) {
-        console.log("Generating pay data for month: " + today.year() + "-" + today.month())
+        console.log("Payment: Generating pay data for month: " + today.year() + "-" + today.month())
 
         // create first bi-weekly pay period (1)
-        const { payment: payment_1, payStatement: payStatement_1 } = paymentUtil.mockPayPeriod(
+        const { payment: payment_1, individualPayStatements: payStatements_1 } = paymentUtil.mockPayPeriod(
             faker.datatype.uuid(),                      // payment id
             moment([today.year(), today.month(), 1]),   // start date
             moment([today.year(), today.month(), 15]),  // end date
-            employees
+            employees,                                  // all employees
         )
+
+        payments.push(payment_1)
+        payStatements_1.forEach(payStatement => payStatements.push(payStatement))
 
         // create last bi-weekly pay period (2)
-        const { payment: payment_2, payStatement: payStatement_2 } = paymentUtil.mockPayPeriod(
+        const { payment: payment_2, individualPayStatements: payStatements_2 } = paymentUtil.mockPayPeriod(
             faker.datatype.uuid(),                                      // payment id
             moment([today.year(), today.month(), 16]),                  // start date
-            moment([today.year(), today.month(), today.daysInMonth()]), // end date
-            employees
+            moment([today.year(), today.month(), today.daysInMonth()]), // end date, daysInMonth() gets how many days in current month to use as month end date 
+            employees,                                                  // all employees
         )
 
-        console.log(today.endOf('month'))
+        payments.push(payment_2)
+        payStatements_1.forEach(payStatement => payStatements.push(payStatement))
+
+
+        //console.log(today.endOf('month'))
         today.subtract(1, 'month')
     }
 
+    //console.log(payments)
+    //console.log(payStatements)
 
     return { payments, payStatements }
 }
@@ -355,7 +351,7 @@ var directoryUtil = {
         // Getting a random integer between two values, inclusive at both max and min
         const min = Math.ceil(managerCountLow)
         const max = Math.floor(managerCountHigh)
-        const numOfManagers = Math.floor(Math.random() * (max - min + 1) + min) + 1 // Always create at least one manager
+        const numOfManagers = Math.floor(Math.random() * (max - min + 1) + min) + 1 // +1 ensures we always create at least one manager
 
         // for only child-departments (i.e. they have a parent department), create a few managers.
         const childDepartments: Department[] = []
@@ -375,7 +371,7 @@ var directoryUtil = {
             employments: []
         }
         for (let i = 0; i < numOfManagers; i++) {
-            const { person, individual, employment } = directoryUtil.mockPerson(getRandomElement(childDepartments).name, null, _globals)
+            const { person, individual, employment } = directoryUtil.mockPerson(getRandomElement(childDepartments)?.name, null, _globals)
             managers.persons.push(person)
             managers.individuals.push(individual)
             managers.employments.push(employment)
@@ -516,15 +512,15 @@ var directoryUtil = {
 }
 
 var paymentUtil = {
-    mockPayPeriod(paymentId: string, startDate: moment.Moment, endDate: moment.Moment, employees: Employment[]): { payment: Payment; payStatement: PayStatement } {
-        console.log("Generating payroll for paymentId: " + paymentId)
+    mockPayPeriod(paymentId: string, startDate: moment.Moment, endDate: moment.Moment, employees: Employment[]): { payment: Payment; individualPayStatements: PayStatement[] } {
+        console.log("Payment: Generating payroll for paymentId: " + paymentId)
 
         // Reusable fields
         let totalCompanyDebit = 0;
         let totalGrossPay = 0;
         let totalNetPay = 0;
-        let totalErTaxes = 0;
-        let totalEeTaxes = 0;
+        let totalEmployerTaxes = 0;
+        let totalEmployeeTaxes = 0;
         let individualIds: string[] = []
         let individualPayStatements: PayStatement[] = []
 
@@ -535,158 +531,458 @@ var paymentUtil = {
 
         // check which employees were employed during this pay period
         const employeesOnPayPeriod = employees.filter(isEmployedDuringPayPeriod)
-        console.log("Employees on pay period: " + employeesOnPayPeriod.length)
+        console.log("Payment: Employees on pay period: " + employeesOnPayPeriod.length)
         employeesOnPayPeriod.forEach(employee => {
+            // Create individual pay statement for each employed employee
 
-            individualIds.push(employee.id) // record employee ids to add to current pay period
-
-            let grossPay: number;
-            let deduction = 0;
-            let contribution = 0;
+            let totalHoursWorked = 0
             if (employee.income.unit === 'yearly') {
-                grossPay = Math.round(employee.income.amount / 12);
-                deduction = Math.round(grossPay * 0.15);
-                contribution = getRandomElement([30000, 40000, 50000]) as number;
+                totalHoursWorked = 80 // 80hrs = assumes 40 hrs/week * 2 weeks per pay period + 
+                totalHoursWorked += (Math.floor(Math.random() * 30) % 100) ? 0 : faker.datatype.number({ min: 1, max: 10 }) // rarely add 'overtime' (as an Earning)
+            } else if (employee.income.unit === 'hourly') {
+                totalHoursWorked = faker.datatype.number({ min: 60, max: 90 })
             } else {
-                grossPay = Math.round(employee.income.amount * 160);
+                console.error("Payment: Employee income unit is not properly defined: " + employee.income.unit)
+                totalHoursWorked = -1
             }
 
-            // Calculate taxes + get rid of decimal places
-            const socialSecurity = Math.round(grossPay * 0.062);
-            const medicare = Math.round(grossPay * 0.0145);
-            const fit = Math.round(grossPay * 0.2);
-            const sit = Math.round(grossPay * 0.08);
-            const eeTax = fit + sit + medicare + socialSecurity;
-            const erTax = medicare + socialSecurity;
-            const netPay = grossPay - eeTax - deduction;
+            // Calculate earnings
+            const { earnings, employeeEarningsAmount } = paymentUtil.mockEarnings(employee, totalHoursWorked)
 
-            // Increase the totals
-            totalGrossPay += grossPay;
+            // Calculate taxes
+            const { taxes, employeeTaxesAmount, employerTaxesAmount } = paymentUtil.mockTaxes(employee, employeeEarningsAmount)
+
+            // Calculate employee deductions
+            const { deductions, employeeDeductionsAmount } = paymentUtil.mockDeductions(employee, employeeEarningsAmount)
+
+            // Calculate employer contributions
+            const { contributions, employerContributionsAmount } = paymentUtil.mockContributions(employee, employeeEarningsAmount)
+
+            console.log('earnings: ' + employeeEarningsAmount)
+            console.log('taxes: ' + employeeTaxesAmount)
+            console.log('deductions: ' + employeeDeductionsAmount)
+            // Calculate net pay
+            const netPay = employeeEarningsAmount - employeeTaxesAmount - employeeDeductionsAmount;
+
+            // Increase the pay period totals
+            totalGrossPay += employeeEarningsAmount;
             totalNetPay += netPay;
-            totalEeTaxes += eeTax;
-            totalErTaxes += erTax;
-            totalCompanyDebit += grossPay + erTax + contribution;
-
-            const totalHours = 160;
+            totalEmployeeTaxes += employeeTaxesAmount;
+            totalEmployerTaxes += employerTaxesAmount;
+            totalCompanyDebit += employeeEarningsAmount + employerTaxesAmount + employerContributionsAmount;
 
             // Build the pay statement for the individual
             const statement: PayStatement = {
+                paymentId: paymentId,
                 individualId: employee.id,
                 type: 'regular_payroll',
                 paymentMethod: 'direct_deposit',
-                grossPay,
-                netPay,
-                totalHours,
-                earnings: [
-                    {
-                        type: employee.income.unit === 'yearly' ? 'salary' : 'wage',
-                        name: 'Regular',
-                        amount: grossPay,
-                        hours: totalHours,
-                    },
-                ],
-                taxes: [
-                    {
-                        name: 'Federal Income Tax',
-                        type: 'federal',
-                        amount: fit,
-                        employer: false,
-                    },
-                    {
-                        name: 'State Income Tax',
-                        type: 'state',
-                        amount: sit,
-                        employer: false,
-                    },
-                    {
-                        name: 'Social Security',
-                        type: 'fica',
-                        amount: socialSecurity,
-                        employer: false,
-                    },
-                    {
-                        name: 'Medicare',
-                        type: 'fica',
-                        amount: medicare,
-                        employer: false,
-                    },
-                    {
-                        name: 'Social Security',
-                        type: 'fica',
-                        amount: socialSecurity,
-                        employer: true,
-                    },
-                    {
-                        name: 'Medicare',
-                        type: 'fica',
-                        amount: medicare,
-                        employer: true,
-                    },
-                ],
-                employeeDeductions: deduction
-                    ? [
-                        {
-                            name: 'Pre-Tax 401k',
-                            amount: deduction,
-                            currency: 'usd',
-                            preTax: true,
-                            type: '401k', // BenefitType._401k
-                        },
-                    ]
-                    : [],
-                employerContributions: contribution
-                    ? [
-                        {
-                            name: '401k Employer Contribution',
-                            amount: contribution,
-                            currency: 'usd',
-                            type: '401k', // BenefitType._401k
-                        },
-                    ]
-                    : [],
+                grossPay: {
+                    amount: employeeEarningsAmount,
+                    currency: 'usd'
+                },
+                netPay: {
+                    amount: netPay,
+                    currency: 'usd'
+                },
+                totalHours: totalHoursWorked,
+                earnings: earnings,
+                taxes: taxes,
+                employeeDeductions: deductions,
+                employerContributions: contributions,
             };
 
+            individualIds.push(employee.id) // record employee ids to add to current pay period
             individualPayStatements.push(statement);
 
         })
 
+        // TODO: when is payDate and debitDate normally?
+        const payDate = endDate.clone().add(1, 'day')
+        const debitDate = endDate.clone().add(1, 'day')
 
         // Build the payment
         const payment: Payment = {
             id: paymentId,
-            startDate: `${year}-${paddedMonth}-01`,
-            endDate: `${year}-${paddedMonth}-${numDays}`,
+            payPeriod: {
+                startDate: startDate.format("YYYY-MM-DD"),
+                endDate: endDate.format("YYYY-MM-DD"),
+            },
             payDate: payDate.format('YYYY-MM-DD'),
             debitDate: debitDate.format('YYYY-MM-DD'),
-            companyDebit: totalCompanyDebit,
-            grossPay: totalGrossPay,
-            netPay: totalNetPay,
-            employerTaxes: totalErTaxes,
-            employeeTaxes: totalEeTaxes,
+            companyDebit: {
+                amount: totalCompanyDebit,
+                currency: 'usd'
+            },
+            grossPay: {
+                amount: totalGrossPay,
+                currency: 'usd'
+            },
+            netPay: {
+                amount: totalNetPay,
+                currency: 'usd'
+            },
+            employerTaxes: {
+                amount: totalEmployerTaxes,
+                currency: 'usd'
+            },
+            employeeTaxes: {
+                amount: totalEmployeeTaxes,
+                currency: 'usd'
+            },
             individualIds,
         }
 
-        // Add individualPayStatements to payStatement
+        return { payment, individualPayStatements }
+    },
+    mockEarnings(employee: Employment, totalHoursWorked: number): { earnings: Earning[], employeeEarningsAmount: number } {
+        let overtimeHours = 0
+        let baseHours = totalHoursWorked
+        let earnings: Earning[] = []
+        let totalEarningsAmount = 0;
 
-        return { payment, payStatement }
+        if (totalHoursWorked > 80) {
+            baseHours = 80
+            overtimeHours = totalHoursWorked - baseHours
+        }
 
-        /*
-export interface Payment {
-id: string;
-pay_period: {
-start_date: string;
-end_date: string;
-}
-pay_date: string;
-debit_date: string;
-company_debit: Currency;
-gross_pay: Currency;
-net_pay: Currency;
-employer_taxes: Currency;
-employee_taxes: Currency;
-individualIds: string[];
-}
-*/
+        // If Employee...
+        if (employee.employment.type === 'employee') {
+            const grossPay = Math.round(employee.income.amount / 24) // Divide 12 month yearly income by 0.5 to split months into 2 paycheck = 24
+
+            if (overtimeHours) {
+                const hourlyPay = Math.round(employee.income.amount / 2080); // Divide salary by 2080 working hours in a year. 
+                const overtimeEarning: Earning = {
+                    type: 'overtime',
+                    name: 'Overtime',
+                    amount: Math.round(hourlyPay * overtimeHours * 1.2),
+                    hours: overtimeHours,
+                    currency: 'usd'
+                }
+                earnings.push(overtimeEarning)
+                totalEarningsAmount += overtimeEarning.amount
+            }
+
+            const baseEarning: Earning = {
+                type: 'salary',
+                name: 'Regular',
+                amount: grossPay,
+                hours: baseHours,
+                currency: 'usd'
+            }
+            earnings.push(baseEarning)
+            totalEarningsAmount += baseEarning.amount
+
+            return { earnings, employeeEarningsAmount: totalEarningsAmount }
+        }
+        // If Contractor...
+        else if (employee.employment.type === 'contractor') {
+            const hourlyPay = employee.income.amount
+
+            if (overtimeHours) {
+                const overtimeEarning: Earning = {
+                    type: 'overtime',
+                    name: 'Overtime',
+                    amount: hourlyPay * overtimeHours * 1.2,
+                    hours: overtimeHours,
+                    currency: 'usd'
+                }
+                earnings.push(overtimeEarning)
+                totalEarningsAmount += overtimeEarning.amount
+
+            }
+
+            const baseEarning: Earning = {
+                type: '1099',
+                name: 'Regular',
+                amount: hourlyPay * baseHours,
+                hours: baseHours,
+                currency: 'usd'
+            }
+            earnings.push(baseEarning)
+            totalEarningsAmount += baseEarning.amount
+
+            return { earnings, employeeEarningsAmount: totalEarningsAmount }
+
+        }
+        // If employment type is something else not defined (shouldn't happen, but still)...
+        else {
+            const baseEarning: Earning = {
+                type: 'salary',
+                name: 'Regular',
+                amount: employee.income.amount,
+                hours: baseHours,
+                currency: 'usd'
+            }
+            earnings.push(baseEarning)
+            totalEarningsAmount += baseEarning.amount
+
+            return { earnings, employeeEarningsAmount: totalEarningsAmount }
+
+        }
+    },
+    mockTaxes(employee: Employment, grossPay: number): { taxes: Tax[], employeeTaxesAmount: number, employerTaxesAmount: number } {
+        // Calculate taxes + get rid of decimal places
+        // Remember, amounts are in USD cents.
+
+        const yearlyIncome = (employee.income.unit === 'yearly') ? employee.income.amount : employee.income.amount * 2080 // calculate yearly contractor (assuming employee.income.unit === 'hourly') income based on 2080 working hours in a year
+        const federalIncomeTax = paymentUtil.calcFederalIncomeTax(grossPay, yearlyIncome)
+        const stateIncomeTax = paymentUtil.calcStateIncomeTax(grossPay, yearlyIncome);
+
+        const socialSecurity = paymentUtil.calcSocialSecurityTax(grossPay);
+        const medicare = paymentUtil.calcMedicareTax(grossPay);
+
+        const employeeTaxesAmount = federalIncomeTax + stateIncomeTax + medicare + socialSecurity;
+        const employerTaxesAmount = medicare + socialSecurity; // employer pays the same tax rate as employee for medicare and social security
+
+        const taxes: Tax[] = [
+            {
+                name: 'Federal Income Tax',
+                type: 'federal',
+                amount: federalIncomeTax,
+                employer: false,
+                currency: 'usd'
+            },
+            {
+                name: 'State Income Tax',
+                type: 'state',
+                amount: stateIncomeTax,
+                employer: false,
+                currency: 'usd'
+            },
+            {
+                name: 'Social Security (OASDI)',
+                type: 'fica',
+                amount: socialSecurity,
+                employer: false,
+                currency: 'usd'
+            },
+            {
+                name: 'Medicare',
+                type: 'fica',
+                amount: medicare,
+                employer: false,
+                currency: 'usd'
+            },
+            {
+                name: 'Social Security (OASDI) - Employer',
+                type: 'fica',
+                amount: socialSecurity,
+                employer: true,
+                currency: 'usd'
+            },
+            {
+                name: 'Medicare - Employer',
+                type: 'fica',
+                amount: medicare,
+                employer: true,
+                currency: 'usd'
+            },
+        ]
+
+        return { taxes, employeeTaxesAmount, employerTaxesAmount }
+    },
+    calcFederalIncomeTax(taxableIncome: number, yearlyIncome: number): number {
+        return Math.round(taxableIncome * paymentUtil.getFederalTaxRate(yearlyIncome))
+    },
+    calcStateIncomeTax(taxableIncome: number, yearlyIncome: number): number {
+        return Math.round(taxableIncome * paymentUtil.getStateTaxRate(yearlyIncome))
+    },
+    calcSocialSecurityTax(taxableIncome: number): number {
+        return Math.round(taxableIncome * 0.062)
+
+        // below is yearly calculation, we need every paycheck calculation
+        // if (taxableIncome >= 25000100) {
+        //     return (13770000 * 0.062) + ((taxableIncome - 25000000) * 0.009)
+        // } else if (taxableIncome <= 25000000 && taxableIncome >= 13770100) {
+        //     return (taxableIncome * 0.062)
+        // } else {
+        //     return (taxableIncome * 0.062)
+        // }
+    },
+    calcMedicareTax(taxableIncome: number): number {
+        return Math.round(taxableIncome * 0.0145)
+    },
+    getFederalTaxRate(yearlyIncome: number): number {
+        // Returns the current federal tax based on taxable income brackets
+
+        if (yearlyIncome === null || yearlyIncome < 0) {
+            console.error("Invalid inputs. Taxable income is required")
+            return 0
+        }
+
+        // These tax brackets are pulled from 2022 year. They may change over time. Since we are going for accurate-ish calculations, this is okay.
+        // Uses a progressive tax rate system, with the tax rate increasing as the taxable income increases.
+        // Remember, amounts are in USD cents.
+
+        let taxRate = 0;
+        if (yearlyIncome <= 952500) {
+            taxRate = 0.1;
+        } else if (yearlyIncome > 952500 && yearlyIncome <= 3870000) {
+            taxRate = 0.12;
+        } else if (yearlyIncome > 3870000 && yearlyIncome <= 8255000) {
+            taxRate = 0.22;
+        } else if (yearlyIncome > 8255000 && yearlyIncome <= 17105000) {
+            taxRate = 0.24;
+        } else if (yearlyIncome > 17105000 && yearlyIncome <= 20885000) {
+            taxRate = 0.32;
+        } else if (yearlyIncome > 20885000 && yearlyIncome <= 37295000) {
+            taxRate = 0.35;
+        } else if (yearlyIncome > 37295000) {
+            taxRate = 0.37;
+        }
+
+        //console.log(`Payment: Federal income tax rate: ${taxRate} for yearly income $${yearlyIncome / 100}`)
+        return taxRate;
+    },
+    getStateTaxRate(yearlyIncome: number): number {
+        // Tax bracket calculations
+        // Uses a progressive tax rate system, with the tax rate increasing as the taxable income increases.
+        // The tax brackets and rates used in this example are fictional and do not represent any real-world tax system.
+        // Remember, amounts are in USD cents.
+
+        if (yearlyIncome === null || yearlyIncome < 0) {
+            console.error("Invalid inputs. Taxable income is required")
+            return 0
+        }
+
+        let taxRate = 0;
+        if (yearlyIncome <= 5000000) {
+            taxRate = 0.05;
+        } else if (yearlyIncome > 5000000 && yearlyIncome <= 7500000) {
+            taxRate = 0.10;
+        } else if (yearlyIncome > 7500000 && yearlyIncome <= 10000000) {
+            taxRate = 0.15;
+        } else if (yearlyIncome > 10000000) {
+            taxRate = 0.20;
+        }
+
+        //console.log(`Payment: State income tax: ${taxRate} for yearly income $${yearlyIncome / 100}`)
+        return taxRate;
+    },
+    mockDeductions(employee: Employment, grossPay: number): { deductions: Deduction[], employeeDeductionsAmount: number } {
+        let finalDeductions: Deduction[] = []
+        let employeeDeductionsAmount: number = 0
+        const defaultDeductions: Deduction[] = [
+            {
+                name: '401(k) plan %',
+                type: '401k',
+                preTax: true,
+                amount: Math.round(grossPay * 0.06),
+                currency: 'usd'
+            },
+            {
+                name: 'MED PRE TAX',
+                type: 's125_medical',
+                preTax: true,
+                amount: Math.round(grossPay * 0.01),
+                currency: 'usd'
+            },
+            {
+                name: 'DEN PRE TAX',
+                type: 's125_dental',
+                preTax: true,
+                amount: Math.round(grossPay * 0.006),
+                currency: 'usd'
+            },
+            {
+                name: 'VIS PRE TAX',
+                type: 's125_vision',
+                preTax: true,
+                amount: Math.round(grossPay * 0.002),
+                currency: 'usd'
+            },
+        ]
+        const additionalDeductions: Deduction[] = [
+            {
+                name: 'Child support 1',
+                type: null,
+                preTax: false,
+                amount: 0,
+                currency: 'usd'
+            },
+            {
+                name: 'Group Life Term',
+                type: null,
+                preTax: true,
+                amount: 0,
+                currency: 'usd'
+            },
+        ]
+
+        if (employee.employment.type === 'employee') {
+            defaultDeductions.forEach(deduction => {
+                finalDeductions.push(deduction)
+                employeeDeductionsAmount += deduction.amount
+            })
+        }
+
+        return { deductions: finalDeductions, employeeDeductionsAmount }
+    },
+    mockContributions(employee: Employment, grossPay: number): { contributions: Contribution[], employerContributionsAmount: number } {
+        let finalContributions: Contribution[] = []
+        let employerContributionsAmount: number = 0
+        const defaultContributions: Contribution[] = [
+            {
+                name: '401(k) Employer',
+                type: '401k',
+                amount: Math.round(grossPay * 0.03),
+                currency: 'usd'
+            },
+            {
+                name: 'MED Employer',
+                type: 's125_medical',
+                amount: Math.round(grossPay * 0.012),
+                currency: 'usd'
+            },
+            {
+                name: 'DEN Employer',
+                type: 's125_dental',
+                amount: Math.round(grossPay * 0.008),
+                currency: 'usd'
+            },
+            {
+                name: 'VIS Employer',
+                type: 's125_vision',
+                amount: Math.round(grossPay * 0.004),
+                currency: 'usd'
+            },
+        ]
+        const additionalContributions: Contribution[] = [
+            {
+                name: 'Disability',
+                type: null,
+                amount: 0,
+                currency: 'usd'
+            },
+            {
+                name: 'Group Term Life',
+                type: null,
+                amount: 0,
+                currency: 'usd'
+            },
+            {
+                name: 'Restricted Stock Gra',
+                type: null,
+                amount: 0,
+                currency: 'usd'
+            },
+            {
+                name: 'Restricted Stock Tax',
+                type: null,
+                amount: 0,
+                currency: 'usd'
+            },
+        ]
+
+        if (employee.employment.type === 'employee') {
+            defaultContributions.forEach(contribution => {
+                finalContributions.push(contribution)
+                employerContributionsAmount += contribution.amount
+            })
+        }
+
+        return { contributions: finalContributions, employerContributionsAmount }
     }
 }
 
@@ -696,7 +992,7 @@ individualIds: string[];
 
 
 
-export { createSandbox, createCompany, createOrganization as createDirectory, companyUtil, }
+export { createSandbox, createCompany, createOrganization as createDirectory, companyUtil, directoryUtil, paymentUtil, }
 
 function getRandomElement(collection: any[]) {
     return (collection) ? collection[Math.floor(Math.random() * collection.length)] : null

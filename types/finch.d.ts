@@ -15,7 +15,7 @@ type Sandbox = {
   payStatements: PayStatement[]
 }
 
-export interface Provider {
+type Provider = {
   provider_id: string;
   display_name: string;
   logo_src: string;
@@ -23,14 +23,14 @@ export interface Provider {
   directory: Directory;
 }
 
-export interface Department {
+type Department = {
   name: string;
   parent: {
     name: string | null;
   }
 }
 
-export interface Location {
+type Location = {
   line1: string | null;
   line2?: string | null;
   city: string | null;
@@ -39,7 +39,7 @@ export interface Location {
   country: string | null;
 }
 
-export interface Account {
+type Account = {
   institution_name: string | null;
   account_name: string | null;
   account_type: string | null;
@@ -47,7 +47,7 @@ export interface Account {
   routing_number: string | null;
 }
 
-export interface Person {
+type Person = {
   id: string;
   firstName: string;
   lastName: string;
@@ -59,7 +59,7 @@ export interface Person {
   isActive: boolean;
 }
 
-export interface Individual {
+type Individual = {
   id: string;
   ssn?: string;
   firstName: string;
@@ -80,7 +80,7 @@ export interface Individual {
   }[];
 }
 
-export interface Employment {
+type Employment = {
   id: string;
   firstName: string;
   lastName: string;
@@ -95,20 +95,24 @@ export interface Employment {
   classCode: string | null;
   location: Location | null;
   employment: {
-    type: string | null;
-    subtype: string | null;
+    type: 'employee' | 'contractor' | null,
+    subtype: 'full_time' | 'intern' | 'part_time' | 'temp' | 'seasonal' | 'individual_contractor' | null
   };
   department: {
     name: string | null;
   };
   income: {
-    unit: string | null;
+    unit: 'yearly' | 'quarterly' | 'monthly'
+    | 'semi_monthly' | ' bi_weekly' | 'weekly'
+    | 'daily' | 'hourly' | 'fixed' | null;
     amount: number;
     currency: string | null;
     effectiveDate: string | null;
   };
   incomeHistory: {
-    unit: string | null;
+    unit: 'yearly' | 'quarterly' | 'monthly'
+    | 'semi_monthly' | ' bi_weekly' | 'weekly'
+    | 'daily' | 'hourly' | 'fixed' | null;
     amount: number | null;
     currency: string | null;
     effectiveDate: string | null;
@@ -119,62 +123,86 @@ export interface Employment {
   }[];
 }
 
-export interface Payment {
+type Payment = {
   id: string;
-  pay_period: {
-    start_date: string;
-    end_date: string;
+  payPeriod: {
+    startDate: string;
+    endDate: string;
   }
-  pay_date: string;
-  debit_date: string;
-  company_debit: Currency;
-  gross_pay: Currency;
-  net_pay: Currency;
-  employer_taxes: Currency;
-  employee_taxes: Currency;
+  payDate: string;
+  debitDate: string;
+  companyDebit: Currency;
+  grossPay: Currency;
+  netPay: Currency;
+  employerTaxes: Currency;
+  employeeTaxes: Currency;
   individualIds: string[];
 }
 
-export interface Currency {
+type Currency = {
   amount: number;
   currency: string;
 }
 
-export interface PayStatement {
+type PayStatement = {
+  paymentId: string;
   individualId: string;
-  type: string;
-  paymentMethod: string;
-  grossPay: number;
-  netPay: number;
+  type: 'regular_payroll' | 'off_cycle_payroll' | 'one_time_payment' | null;
+  paymentMethod: 'check' | 'direct_deposit' | null;
+  grossPay: Currency,
+  netPay: Currency,
   totalHours: number;
-  earnings: {
-    type: string;
-    name: string;
-    amount: number;
-    hours: number;
-  }[];
-  taxes: {
-    name: string;
-    type: string;
-    amount: number;
-    employer: boolean;
-  }[];
-  employeeDeductions: {
-    name: string;
-    amount: number;
-    currency: string;
-    preTax: boolean;
-    type: string;
-  }[];
-  employerContributions: {
-    name: string;
-    amount: number;
-    currency: string;
-    type: string;
-  }[];
+  earnings: Earning[];
+  taxes: Tax[];
+  employeeDeductions: Deduction[];
+  employerContributions: Contribution[];
 }
 
-export interface Company {
+type Earning = {
+  type: 'salary' | 'wage' | 'reimbursement'
+  | 'overtime' | 'severance' | 'double_overtime'
+  | 'pto' | 'sick' | 'bonus' | 'commission'
+  | 'tips' | '1099' | 'other' | null;
+  name: string;
+  amount: number;
+  hours: number;
+  currency: string
+}
+
+type Tax = {
+  name: string;
+  type: 'state' | 'federal' | 'local' | 'fica' | null
+  amount: number;
+  employer: boolean;
+  currency: string
+}
+
+type Deduction = {
+  name: string;
+  amount: number;
+  currency: string;
+  preTax: boolean;
+  type: '401k' | '401k_roth' | '401k_loan'
+  | '403b' | '403b_roth' | '457' | '457_roth'
+  | 's125_medical' | 's125_dental' | 's125_vision'
+  | 'hsa_pre' | 'hsa_post' | 'fsa_medical'
+  | 'fsa_dependent_care' | 'simple_ira' | 'simple'
+  | 'commuter' | 'custom_post_tax' | 'custom_pre_tax' | null
+}
+
+type Contribution = {
+  name: string;
+  amount: number;
+  currency: string;
+  type: '401k' | '401k_roth' | '401k_loan'
+  | '403b' | '403b_roth' | '457' | '457_roth'
+  | 's125_medical' | 's125_dental' | 's125_vision'
+  | 'hsa_pre' | 'hsa_post' | 'fsa_medical'
+  | 'fsa_dependent_care' | 'simple_ira' | 'simple'
+  | 'commuter' | 'custom_post_tax' | 'custom_pre_tax' | null
+}
+
+type Company = {
   id: string;
   legal_name: string | null;
   entity: {
@@ -189,7 +217,7 @@ export interface Company {
   accounts: Account[] | null;
 }
 
-export interface NotImplementedError {
+type NotImplementedError = {
   statusCode: number,
   status: number,
   code: number,
@@ -197,7 +225,7 @@ export interface NotImplementedError {
   name: string
 }
 
-export interface SupportedBenefitFeature {
+type SupportedBenefitFeature = {
   type: string;
   companyContribution: string[];
   employeeDeduction: string[];

@@ -86,6 +86,7 @@ To learn more about Finch, take a look at the following resources:
 ## Notes
 
 - only creates 2 year of historical pay data
+- only creating default deductions and contributions of 401k, medical, vision, and dental. Can add others over time.
 
 ## future api scenario generator inputs
 
@@ -93,3 +94,6 @@ To learn more about Finch, take a look at the following resources:
 [ ] custom_fields names
 [ ] contractor converting to full time employee
 [ ] send a company id to generate next payroll
+[ ] create new employee
+[ ] delete employee (terminate)
+[ ] delete company (disconnect access token)
