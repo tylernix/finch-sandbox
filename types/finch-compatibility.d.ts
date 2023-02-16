@@ -1,31 +1,32 @@
-export interface Provider_Fields {
-    provider_id: string;
-    display_name: string;
-    logo: string;
-    icon: string | null;
-    products: string[];
-    mfa_required: string | null;
-    primary_color: string | null;
-    compatibility: {
-        company: Company_Fields | null;
-        directory: Directory_Fields;
-    }
 
-}
 
 export interface Company_Fields {
     id: boolean;
     legal_name: boolean;
-    entity: Entity_Fields;
+    entity: {
+        type: boolean;
+        subtype: boolean;
+    };
     primary_email: boolean;
     primary_phone_number: boolean;
     ein: boolean;
     department: boolean;
-    departments: Departments_Fields;
+    departments: {
+        name: boolean;
+        parent: {
+            name: boolean;
+        }
+    }
     location: boolean;
-    locations: Locations_Fields;
+    locations: Location_Fields;
     account: boolean;
-    accounts: Accounts_Fields;
+    accounts: {
+        routing_number: boolean;
+        account_name: boolean;
+        institution_name: boolean;
+        account_type: boolean;
+        account_number: boolean;
+    }
 }
 
 export interface Directory_Fields {
@@ -33,59 +34,122 @@ export interface Directory_Fields {
     first_name: boolean;
     middle_name: boolean;
     last_name: boolean;
-    manager: Manager_Fields;
-    department: Ent_Fields;
+    manager: {
+        id: boolean;
+    }
+    department: {
+        name: boolean;
+    }
     is_active: boolean;
 }
 
-export interface Accounts_Fields {
-    routing_number: boolean;
-    account_name: boolean;
-    institution_name: boolean;
-    account_type: boolean;
-    account_number: boolean;
+export interface Individual_Fields {
+    id: boolean;
+    first_name: boolean;
+    middle_name: boolean;
+    last_name: boolean;
+    preferred_name: boolean;
+    email: boolean;
+    emails: {
+        data: boolean;
+        type: boolean;
+    },
+    phone_number: boolean;
+    phone_numbers: {
+        data: boolean;
+        type: boolean;
+    },
+    dob: boolean;
+    residence: Location_Fields;
+    gender: boolean;
+    ethnicity: boolean;
 }
 
-export interface Departments_Fields {
-    name: boolean;
-    parent: Ent_Fields;
+export interface Employment_Fields {
+    id: boolean;
+    first_name: boolean;
+    middle_name: boolean;
+    last_name: boolean;
+    title: boolean;
+    manager: {
+        id: boolean;
+    },
+    department: {
+        name: boolean;
+    },
+    employment: {
+        type: boolean;
+        subtype: boolean;
+    },
+    start_date: boolean;
+    end_date: boolean;
+    is_active: boolean;
+    location: Location_Fields;
+    income: {
+        unit: boolean;
+        amount: boolean;
+        currency: boolean;
+        history: boolean;
+    };
+    class_code: boolean;
+    custom_fields: boolean;
 }
 
-export interface Ent_Fields {
-    name: boolean;
+export interface Payment_Fields {
+    id: boolean;
+    pay_period: {
+        start_date: boolean;
+        end_date: boolean;
+    },
+    pay_date: boolean;
+    debit_date: boolean;
+    company_debit: boolean;
+    gross_pay: boolean;
+    net_pay: boolean;
+    employer_taxes: boolean;
+    employee_taxes: boolean;
+    individual_ids: boolean;
 }
 
-export interface Entity_Fields {
+export interface Paystatement_Fields {
+    individual_id: boolean;
     type: boolean;
-    subtype: boolean;
+    payment_method: boolean;
+    total_hours: boolean;
+    gross_pay: boolean;
+    net_pay: boolean;
+    earnings: {
+        type: boolean;
+        name: boolean;
+        amount: boolean;
+        currency: boolean;
+    },
+    employee_deductions: {
+        type: boolean;
+        name: boolean;
+        amount: boolean;
+        currency: boolean;
+        pre_tax: boolean;
+    },
+    employer_contributions: {
+        name: boolean;
+        amount: boolean;
+        currency: boolean;
+    },
+    taxes: {
+        type: boolean;
+        name: boolean;
+        amount: boolean;
+        currency: boolean;
+        employer: boolean;
+    },
 }
 
-export interface Locations_Fields {
+export interface Location_Fields {
     line1: boolean;
     line2: boolean;
     city: boolean;
     state: boolean;
     postal_code: boolean;
     country: boolean;
-}
-
-export interface Individuals_Fields {
-    id: boolean;
-    first_name: boolean;
-    middle_name: boolean;
-    last_name: boolean;
-    manager: Manager_Fields;
-    department: Ent_Fields;
-    is_active: boolean;
-}
-
-
-
-export interface Manager_Fields {
-    id: boolean;
-}
-
-export interface Paging_Fields {
-    count: boolean;
-    offset: boolean;
 }

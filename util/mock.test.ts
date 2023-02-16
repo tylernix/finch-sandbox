@@ -1,20 +1,22 @@
 const mock = require('./mock');
 import moment from 'moment'
 import { faker } from '@faker-js/faker'
-import { Company, Contribution, Deduction, Earning, Payment, PayStatement, Sandbox, SandboxGlobal, Tax } from 'types/finch';
+import { Company, Contribution, Deduction, Earning, ISandbox, Payment, PayStatement, Sandbox, SandboxGlobal, Tax } from 'types/finch';
 import payStatement from 'pages/api/employer/pay-statement';
 
 const { PROVIDER_COMPATIBILITY } = require('./constants')
+
+// TODO: write a test that checks for no null fields (except for a few line location.line2, etc)
 
 /*************
  * Mock
  *************/
 test('Mock-Sandbox, Contains departments', () => {
-    const sandbox: Sandbox = mock.createSandbox(1, faker.datatype.uuid())
+    const sandbox: ISandbox = mock.createSandbox(1, faker.datatype.uuid())
     expect(sandbox.company.departments).not.toEqual([])
 })
 test('Mock-Sandbox, Directory size=10', () => {
-    const sandbox: Sandbox = mock.createSandbox(10, faker.datatype.uuid())
+    const sandbox: ISandbox = mock.createSandbox(10, faker.datatype.uuid())
     expect(sandbox.directory).toHaveLength(10)
 })
 test('Mock-Company, email=@test.com', () => {
@@ -373,11 +375,11 @@ test('Mock-getStateTaxRate, > $100,000.00 = 0.2', () => {
  *************/
 
 // test('Compatibility-Company-BambooHR, Contain account name', () => {
-//     const sandbox: Sandbox = mock.createSandbox(PROVIDER_COMPATIBILITY.bamboohr, 1)
+//     const sandbox: ISandbox[] = mock.createSandbox(PROVIDER_COMPATIBILITY.bamboohr, 1)
 //     expect(sandbox.company.accounts[0].account_name).not.toBe(null)
 // })
 test('Compatibility-Company-BambooHR, Contains departments', () => {
-    const sandbox: Sandbox = mock.createSandbox(PROVIDER_COMPATIBILITY.bamboohr, 1)
+    const sandbox: ISandbox = mock.createSandbox(PROVIDER_COMPATIBILITY.bamboohr, 1)
     expect(sandbox.company.departments).not.toEqual([])
 })
 
@@ -386,7 +388,7 @@ test('Compatibility-Company-BambooHR, Contains departments', () => {
  *************/
 
 // test('Compatibility-Company-Justworks, No account name', () => {
-//     const sandbox: Sandbox = mock.createSandbox(PROVIDER_COMPATIBILITY.justworks, 1)
+//     const sandbox: ISandbox[] = mock.createSandbox(PROVIDER_COMPATIBILITY.justworks, 1)
 //     expect(sandbox.company.accounts[0].account_name).toBe(null)
 // })
 
@@ -395,7 +397,7 @@ test('Compatibility-Company-BambooHR, Contains departments', () => {
  *************/
 
 // test('Compatibility-Company-Workday, Company endpoint not implemented', () => {
-//     const sandbox: Sandbox = mock.createSandbox(PROVIDER_COMPATIBILITY.workday, 10)
+//     const sandbox: ISandbox[] = mock.createSandbox(PROVIDER_COMPATIBILITY.workday, 10)
 //     expect(sandbox.company).toBe(null)
 // })
 

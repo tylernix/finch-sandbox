@@ -26,7 +26,7 @@ export default async function company(
     try {
       const sandbox = await redis.get(token)
       const company = sandbox !== null ? await redis.hget(sandbox, 'company') : ''
-      const parsedCompany: Company[] | NotImplementedError = company !== null ? JSON.parse(company) : null
+      const parsedCompany: Company | NotImplementedError = company !== null ? JSON.parse(company) : null
 
       // If parsedCompany is of type notImplementedError, then return 501
       if ("status" in parsedCompany)

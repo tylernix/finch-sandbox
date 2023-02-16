@@ -1,32 +1,93 @@
+import { Company_Fields, Directory_Fields, Individual_Fields, Employment_Fields, Payment_Fields, Paystatement_Fields } from './finch-compatibility'
+
 type SandboxGlobal = {
   employeeSize: number,
   companyId: string,
   companyName: string,
   companyEmailDomain: string,
-  companyDepartments: Department[],
-  companyLocations: Location[]
+  companyDepartments: IDepartment[],
+  companyLocations: ILocation[]
 }
 type Sandbox = {
-  company: Company,
+  company: Company | NotImplementedError,
+  directory: Person[] | NotImplementedError,
+  individual: Individual[] | NotImplementedError,
+  employment: Employment[] | NotImplementedError,
+  payments: Payment[] | NotImplementedError,
+  payStatements: PayStatement[] | NotImplementedError,
+}
+
+type ISandbox = {
+  company: ICompany,
   directory: Person[],
   individual: Individual[],
   employment: Employment[],
   payments: Payment[],
-  payStatements: PayStatement[]
+  payStatements: PayStatement[],
 }
 
 type Provider = {
-  provider_id: string;
+  id: string;
+  // 'adp_run' |
+  // 'bamboo_hr' |
+  // 'bamboo_hr_api' |
+  // 'bob' |
+  // 'gusto' |
+  // 'humaans' |
+  // 'insperity' |
+  // 'justworks' |
+  // 'namely' |
+  // 'paychex_flex' |
+  // 'paychex_flex_api' |
+  // 'paycom' |
+  // 'paycom_api' |
+  // 'paylocity' |
+  // 'paylocity_api' |
+  // 'personio' |
+  // 'quickbooks' |
+  // 'rippling' |
+  // 'adp_run' |
+  // 'sage_hr' |
+  // 'sapling' |
+  // 'sequoia_one' |
+  // 'square_payroll' |
+  // 'trinet' |
+  // 'trinet_api' |
+  // 'ulti_pro' |
+  // 'wave' |
+  // 'workday' |
+  // 'zenefits' |
+  // 'zenefits_api'
+  // ;
   display_name: string;
-  logo_src: string;
-  company: Company;
-  directory: Directory;
+  products: string[];
+  icon: string;
+  logo: string;
+  mfa_required: boolean;
+  primary_color: string;
+  manual: boolean;
+  category: string;
+  compatibility: {
+    company: Company_Fields | null;
+    directory: Directory_Fields | null;
+    individual: Individual_Fields | null;
+    employment: Employment_Fields | null;
+    payment: Payment_Fields | null;
+    pay_statement: Paystatement_Fields | null;
+  }
 }
 
 type Department = {
-  name: string;
+  name: string | null;
   parent: {
     name: string | null;
+  }
+}
+
+type IDepartment = {
+  name: string;
+  parent: {
+    name: string;
   }
 }
 
@@ -39,12 +100,29 @@ type Location = {
   country: string | null;
 }
 
+type ILocation = {
+  line1: string;
+  line2?: string | null;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+}
+
 type Account = {
   institution_name: string | null;
   account_name: string | null;
   account_type: string | null;
   account_number: string | null;
   routing_number: string | null;
+}
+
+type IAccount = {
+  institution_name: string;
+  account_name: string;
+  account_type: string;
+  account_number: string;
+  routing_number: string;
 }
 
 type Person = {
@@ -206,7 +284,7 @@ type Company = {
   id: string;
   legal_name: string | null;
   entity: {
-    type: string;
+    type: string | null;
     subtype: string | null;
   };
   ein: string | null;
@@ -215,6 +293,21 @@ type Company = {
   departments: Department[] | null;
   locations: Location[] | null;
   accounts: Account[] | null;
+}
+
+type ICompany = {
+  id: string;
+  legal_name: string;
+  entity: {
+    type: string;
+    subtype: string;
+  };
+  ein: string;
+  primary_email: string;
+  primary_phone_number: string;
+  departments: IDepartment[];
+  locations: ILocation[];
+  accounts: IAccount[];
 }
 
 type NotImplementedError = {
@@ -234,28 +327,28 @@ type SupportedBenefitFeature = {
   frequencies: string[];
 }
 
-export type DataOrFactory<T> = T | ((args?: unknown) => T | Promise<T>);
+// export type DataOrFactory<T> = T | ((args?: unknown) => T | Promise<T>);
 
-export interface CompanyDataProvider<T> {
-  companyV2: DataOrFactory<Company>;
-  directoryV2: DataOrFactory<Person<T>[]>;
-  individual: DataOrFactory<Individual<T> | undefined>;
-  employment: DataOrFactory<Employment<T> | undefined>;
-  payments: DataOrFactory<Payment<T>[]>;
-  payStatements: DataOrFactory<{
-    payStatements: PayStatement<T>[];
-  }>;
-  shouldReauthenticate: DataOrFactory<boolean>;
-  // Benefits
-  supportedBenefitFeaturesForCompany: DataOrFactory<SupportedBenefitFeature[]>;
-  getAllBenefitsForCompany: DataOrFactory<any>;
-  getBenefitForCompany: DataOrFactory<any>;
-  createBenefitForCompany: DataOrFactory<any>;
-  updateBenefitForCompany: DataOrFactory<any>;
-  enrollIndividualBenefit: DataOrFactory<any>;
-  unenrollIndividualBenefit: DataOrFactory<any>;
-  getEnrolledIndividuals: DataOrFactory<any>;
-  getEnrolledIndividualBenefitsPreFlight: DataOrFactory<any>;
-  getEnrolledIndividualBenefits: DataOrFactory<any>;
-}
+// export interface CompanyDataProvider<T> {
+//   companyV2: DataOrFactory<Company>;
+//   directoryV2: DataOrFactory<Person<T>[]>;
+//   individual: DataOrFactory<Individual<T> | undefined>;
+//   employment: DataOrFactory<Employment<T> | undefined>;
+//   payments: DataOrFactory<Payment<T>[]>;
+//   payStatements: DataOrFactory<{
+//     payStatements: PayStatement<T>[];
+//   }>;
+//   shouldReauthenticate: DataOrFactory<boolean>;
+//   // Benefits
+//   supportedBenefitFeaturesForCompany: DataOrFactory<SupportedBenefitFeature[]>;
+//   getAllBenefitsForCompany: DataOrFactory<any>;
+//   getBenefitForCompany: DataOrFactory<any>;
+//   createBenefitForCompany: DataOrFactory<any>;
+//   updateBenefitForCompany: DataOrFactory<any>;
+//   enrollIndividualBenefit: DataOrFactory<any>;
+//   unenrollIndividualBenefit: DataOrFactory<any>;
+//   getEnrolledIndividuals: DataOrFactory<any>;
+//   getEnrolledIndividualBenefitsPreFlight: DataOrFactory<any>;
+//   getEnrolledIndividualBenefits: DataOrFactory<any>;
+// }
 

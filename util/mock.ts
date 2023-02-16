@@ -1,57 +1,11 @@
 import { faker } from '@faker-js/faker'
-import company from 'pages/api/employer/company'
-import { SandboxGlobal, Sandbox, Company, Department, Provider, Location, Account, Person, Individual, Employment, Payment, PayStatement, Deduction, Contribution, Tax, Earning } from 'types/finch'
-import { Provider_Fields, Company_Fields, Directory_Fields, Accounts_Fields, Departments_Fields, Locations_Fields, } from 'types/finch-compatibility'
+import { SandboxGlobal, Sandbox, Company, Department, Provider, Location, Account, Person, Individual, Employment, Payment, PayStatement, Deduction, Contribution, Tax, Earning, ISandbox, ICompany, IDepartment, ILocation, IAccount } from 'types/finch'
 import moment from 'moment'
 
 // TODO: Set random default Finch fields to use like sample deduction names or employee types so that they apply across the whole employer creation consistently but change with every new company created.
 
-
-// function filterSandboxByProvider(sandbox: Sandbox, provider: Provider_Fields,): Sandbox {
-//     // const _sandbox: SandboxGlobal = {
-//     //     companyId,
-//     //     companyName,
-//     //     companyEmail,
-//     //     companyDefaultDepartments: companyDepartments,
-//     //     companyDefaultLocations: companyLocations
-//     // }
-
-//     // Filter 
-
-
-
-//     // Logic for data fields that depend on each other
-//     // const entityType = (compatibility.entity.type) ? companyUtil.getEntityType() : null
-//     // const entitySubtype = (compatibility.entity.subtype && entityType) ? companyUtil.getEntitySubtype() : null
-
-//     // return {
-//     //     id: faker.datatype.uuid(),
-//     //     legal_name: (compatibility.legal_name) ? sandbox.companyName : null,
-//     //     entity: {
-//     //         type: entityType,
-//     //         subtype: entitySubtype
-//     //     },
-//     //     primary_email: (compatibility.primary_email) ? faker.internet.email(undefined, undefined, sandbox.companyEmail) : null,
-//     //     primary_phone_number: (compatibility.primary_phone_number) ? faker.phone.number('##########') : null,
-//     //     departments: (compatibility.department) ? companyUtil.addDepartments(sandbox.companyDefaultDepartments, compatibility.departments) : null,
-//     //     ein: (compatibility.ein) ? faker.phone.number('##-#######') : null,
-//     //     locations: (compatibility.location) ? sandbox.companyDefaultLocations : null,
-//     //     accounts: (compatibility.account) ? companyUtil.createAccounts(sandbox.companyName, compatibility.accounts) : null,
-
-//     //const _company: Company | null = (provider.compatibility.company) ? createCompany(sandbox, provider.compatibility.company) : null
-//     // const _directory: Person[] | null = (provider.compatibility.directory) ? createDirectory(employeeCount, sandbox, provider.compatibility.directory) : null
-//     // const _individuals: Individual[] = []
-//     // const _employments: Employment[] = []
-//     // const _payments: Payment[] = []
-//     // const _payStatements: PayStatement[] = []
-
-//     //return { _company, _directory, _individuals, _employments, _payments, _payStatements }
-
-// }
-
-
-function createSandbox(employeeSize: number, companyId: string): Sandbox {
-    const companyName = faker.company.name()
+function createSandbox(employeeSize: number, companyId: string): ISandbox {
+    const companyName = `${titleCase(faker.word.adjective())} ${titleCase(faker.word.noun())}${getRandomElement([', Inc', ' LLC'])}`
 
     const _globals: SandboxGlobal = {
         employeeSize: employeeSize,
@@ -66,7 +20,7 @@ function createSandbox(employeeSize: number, companyId: string): Sandbox {
     var { directory, individuals, employments } = createOrganization(_globals)
     var { payments, payStatements } = createPayments(_globals, employments)
 
-    const _sandbox: Sandbox = {
+    const _sandbox: ISandbox = {
         company: company,
         directory: directory,
         individual: individuals,
@@ -79,7 +33,7 @@ function createSandbox(employeeSize: number, companyId: string): Sandbox {
     return _sandbox
 }
 
-function createCompany(_globals: SandboxGlobal): Company {
+function createCompany(_globals: SandboxGlobal): ICompany {
     // Logic for data fields that depend on each other
     const entityType = companyUtil.getEntityType()
     const entitySubtype = (entityType) ? companyUtil.getEntitySubtype() : null
@@ -105,6 +59,8 @@ function createOrganization(_globals: SandboxGlobal): {
     individuals: Individual[],
     employments: Employment[]
 } {
+    console.log("Directory: Creating employee directory")
+
     let directory: Person[] = []
     let individuals: Individual[] = []
     let employments: Employment[] = []
@@ -138,6 +94,8 @@ function createPayments(_globals: SandboxGlobal, employees: Employment[]): {
     payments: Payment[],
     payStatements: PayStatement[],
 } {
+    console.log("Payment: Creating payment and pay statements")
+
     // Reusable fields
     let payments: Payment[] = []
     let payStatements: PayStatement[] = []
@@ -153,13 +111,13 @@ function createPayments(_globals: SandboxGlobal, employees: Employment[]): {
 
     // unique generate payroll for this month depending on day of month
     //const paymentId = faker.datatype.uuid()
-    console.log("Payment: this month payroll: " + today.toDate())
+    //console.log("Payment: this month payroll: " + today.toDate())
 
     // generate payroll the same way for all other months starting with the previous month
     // Example: if today is January 17, start generating regular payroll in February = Feb 1-15 & Feb 16-28, then repeat for two years.
     today.subtract(1, 'month')
     while (today.isAfter(twoYearsAgo)) {
-        console.log("Payment: Generating pay data for month: " + today.year() + "-" + today.month())
+        //console.log("Payment: Generating pay data for month: " + today.year() + "-" + today.month())
 
         // create first bi-weekly pay period (1)
         const { payment: payment_1, individualPayStatements: payStatements_1 } = paymentUtil.mockPayPeriod(
@@ -227,7 +185,7 @@ var companyUtil = {
         const numOfDepts = Math.floor(Math.random() * (max - min + 1) + min)
 
         // Create random fake departments
-        let departments: Department[] = []
+        let departments: IDepartment[] = []
         for (let i = 0; i < numOfDepts; i++) {
             departments.push({
                 name: faker.name.jobArea(),
@@ -248,7 +206,7 @@ var companyUtil = {
         const numOfLocations = Math.floor(Math.random() * (max - min + 1) + min)
 
         // Create random fake locations localized to USA for now
-        let locations: Location[] = []
+        let locations: ILocation[] = []
         for (let i = 0; i < numOfLocations; i++) {
             locations.push({
                 line1: faker.address.streetAddress(false),
@@ -271,11 +229,11 @@ var companyUtil = {
         const numOfAccounts = Math.floor(Math.random() * (max - min + 1) + min)
 
         // Create random fake bank accounts
-        let accounts: Account[] = []
+        let accounts: IAccount[] = []
         for (let i = 0; i < numOfAccounts; i++) {
             accounts.push({
                 routing_number: faker.finance.routingNumber(),
-                account_name: companyName,
+                account_name: companyName.toUpperCase(),
                 institution_name: getRandomElement([
                     "BANK OF AMERICA",
                     "JPMORGAN CHASE",
@@ -299,42 +257,6 @@ var companyUtil = {
 
         return accounts
     },
-    // filterDepartments: (defaultDepartments: Department[], company_departments: Departments_Fields) => {
-    //     let final: Department[] = []
-    //     defaultDepartments.forEach((dept, i) => {
-    //         final.push({
-    //             name: (company_departments.name) ? dept.name : null,
-    //             parent: {
-    //                 name: (company_departments.parent.name && dept.parent.name) ? ((i % 4) ? dept.parent.name : null) : null,
-    //             }
-    //         })
-    //     })
-    //     return final
-    // },
-    // filterLocations: (defaultLocations: Location[], company_locations: Locations_Fields) => {
-    //     let final: Location[] = []
-    //     defaultLocations.forEach((location, i) => {
-    //         final.push({
-    //             line1: (company_locations.line1) ? location.line1 : null,
-    //             line2: (company_locations.line2) ? location.line2 : null,
-    //             city: (company_locations.city) ? location.city : null,
-    //             state: (company_locations.state) ? location.state : null,
-    //             postal_code: (company_locations.postal_code) ? location.postal_code : null,
-    //             country: (company_locations.country) ? location.country : null,
-    //         })
-    //     })
-    //     return final
-    // },
-    // filterAccounts: (companyName: string, companyAccounts: Accounts_Fields) => {
-    // accounts.push({
-    //     routing_number: (companyAccounts.routing_number) ? faker.finance.routingNumber() : null,
-    //     account_name: (companyAccounts.account_name) ? companyName : null,
-    //     institution_name: (companyAccounts.institution_name) ? getRandomElement(bankNames) : null,
-    //     account_type: (companyAccounts.account_type) ? getRandomElement(accountTypes) : null,
-    //     account_number: (companyAccounts.account_number) ? faker.finance.account(10) : null,
-    // })
-    // }
-
 }
 
 var directoryUtil = {
@@ -354,7 +276,7 @@ var directoryUtil = {
         const numOfManagers = Math.floor(Math.random() * (max - min + 1) + min) + 1 // +1 ensures we always create at least one manager
 
         // for only child-departments (i.e. they have a parent department), create a few managers.
-        const childDepartments: Department[] = []
+        const childDepartments: IDepartment[] = []
         _globals.companyDepartments.forEach(dept => {
             if (dept.parent.name) childDepartments.push(dept)
         })
@@ -513,7 +435,7 @@ var directoryUtil = {
 
 var paymentUtil = {
     mockPayPeriod(paymentId: string, startDate: moment.Moment, endDate: moment.Moment, employees: Employment[]): { payment: Payment; individualPayStatements: PayStatement[] } {
-        console.log("Payment: Generating payroll for paymentId: " + paymentId)
+        //console.log("Payment: Generating payroll for paymentId: " + paymentId)
 
         // Reusable fields
         let totalCompanyDebit = 0;
@@ -531,7 +453,7 @@ var paymentUtil = {
 
         // check which employees were employed during this pay period
         const employeesOnPayPeriod = employees.filter(isEmployedDuringPayPeriod)
-        console.log("Payment: Employees on pay period: " + employeesOnPayPeriod.length)
+        //console.log("Payment: Employees on pay period: " + employeesOnPayPeriod.length)
         employeesOnPayPeriod.forEach(employee => {
             // Create individual pay statement for each employed employee
 
@@ -558,9 +480,9 @@ var paymentUtil = {
             // Calculate employer contributions
             const { contributions, employerContributionsAmount } = paymentUtil.mockContributions(employee, employeeEarningsAmount)
 
-            console.log('earnings: ' + employeeEarningsAmount)
-            console.log('taxes: ' + employeeTaxesAmount)
-            console.log('deductions: ' + employeeDeductionsAmount)
+            //console.log('earnings: ' + employeeEarningsAmount)
+            //console.log('taxes: ' + employeeTaxesAmount)
+            //console.log('deductions: ' + employeeDeductionsAmount)
             // Calculate net pay
             const netPay = employeeEarningsAmount - employeeTaxesAmount - employeeDeductionsAmount;
 
@@ -996,4 +918,10 @@ export { createSandbox, createCompany, createOrganization as createDirectory, co
 
 function getRandomElement(collection: any[]) {
     return (collection) ? collection[Math.floor(Math.random() * collection.length)] : null
+}
+
+function titleCase(str: string) {
+    return str.toLowerCase().split(' ').map(function (word) {
+        return (word.charAt(0).toUpperCase() + word.slice(1));
+    }).join(' ');
 }
