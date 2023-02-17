@@ -92,12 +92,12 @@ test('Mock-PayPeriod, No negative amounts in Payment', () => {
 
     const pay: { payment: Payment; individualPayStatements: PayStatement[] } = mock.paymentUtil.mockPayPeriod(paymentId, startDate, endDate, employees)
 
-    expect(pay.payment.companyDebit.amount).toBeGreaterThanOrEqual(0)
-    expect(pay.payment.grossPay.amount).toBeGreaterThanOrEqual(0)
-    expect(pay.payment.netPay.amount).toBeGreaterThanOrEqual(0)
-    expect(pay.payment.employeeTaxes.amount).toBeGreaterThanOrEqual(0)
-    expect(pay.payment.employerTaxes.amount).toBeGreaterThanOrEqual(0)
-    expect(pay.payment.grossPay.amount).toBeGreaterThanOrEqual(0)
+    expect(pay.payment.company_debit.amount).toBeGreaterThanOrEqual(0)
+    expect(pay.payment.gross_pay.amount).toBeGreaterThanOrEqual(0)
+    expect(pay.payment.net_pay.amount).toBeGreaterThanOrEqual(0)
+    expect(pay.payment.employee_taxes.amount).toBeGreaterThanOrEqual(0)
+    expect(pay.payment.employer_taxes.amount).toBeGreaterThanOrEqual(0)
+    expect(pay.payment.gross_pay.amount).toBeGreaterThanOrEqual(0)
 
 })
 test('Mock-PayPeriod, No negative amounts in Pay Statement', () => {
@@ -161,18 +161,18 @@ test('Mock-PayPeriod, No negative amounts in Pay Statement', () => {
     const pay: { payment: Payment; individualPayStatements: PayStatement[] } = mock.paymentUtil.mockPayPeriod(paymentId, startDate, endDate, employees)
 
     pay.individualPayStatements.forEach(payStatement => {
-        expect(payStatement.grossPay.amount).toBeGreaterThanOrEqual(0)
-        expect(payStatement.netPay.amount).toBeGreaterThanOrEqual(0)
+        expect(payStatement.gross_pay.amount).toBeGreaterThanOrEqual(0)
+        expect(payStatement.net_pay.amount).toBeGreaterThanOrEqual(0)
         payStatement.taxes.forEach(tax => {
             expect(tax.amount).toBeGreaterThanOrEqual(0)
         })
         payStatement.earnings.forEach(earning => {
             expect(earning.amount).toBeGreaterThanOrEqual(0)
         })
-        payStatement.employeeDeductions.forEach(deduction => {
+        payStatement.employee_deductions.forEach(deduction => {
             expect(deduction.amount).toBeGreaterThanOrEqual(0)
         })
-        payStatement.employerContributions.forEach(contribution => {
+        payStatement.employer_contributions.forEach(contribution => {
             expect(contribution.amount).toBeGreaterThanOrEqual(0)
         })
     })

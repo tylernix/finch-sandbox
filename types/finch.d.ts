@@ -127,23 +127,35 @@ type IAccount = {
 
 type Person = {
   id: string;
-  firstName: string;
-  lastName: string;
-  middleName: string | null;
-  departmentName: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string | null;
+  department: string;
   manager: {
     id: string | null;
   }
-  isActive: boolean;
+  is_active: boolean;
+}
+
+type IPerson = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string | null;
+  department: string;
+  manager: {
+    id: string | null;
+  }
+  is_active: boolean;
 }
 
 type Individual = {
   id: string;
   ssn?: string;
-  firstName: string;
-  lastName: string;
-  middleName: string | null;
-  preferredName: string | null;
+  first_name: string;
+  last_name: string;
+  middle_name: string | null;
+  preferred_name: string | null;
   gender: string | null;
   ethnicity: string | null;
   dob: string;
@@ -152,25 +164,46 @@ type Individual = {
     data: string | null;
     type: string | null;
   }[];
-  phoneNumbers: {
+  phone_numbers: {
     data: string | null;
     type: string | null;
   }[];
 }
 
+type IIndividual = {
+  id: string;
+  ssn?: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string;
+  preferred_name: string;
+  gender: string;
+  ethnicity: string;
+  dob: string;
+  residence: Location;
+  emails: {
+    data: string;
+    type: string;
+  }[];
+  phone_numbers: {
+    data: string;
+    type: string;
+  }[];
+}
+
 type Employment = {
   id: string;
-  firstName: string;
-  lastName: string;
-  middleName: string | null;
+  first_name: string;
+  last_name: string;
+  middle_name: string | null;
   title: string | null;
   manager: {
     id: string | null;
   }
-  startDate: string;
-  endDate: string | null;
-  isActive: boolean;
-  classCode: string | null;
+  start_date: string;
+  end_date: string | null;
+  is_active: boolean;
+  class_code: string | null;
   location: Location | null;
   employment: {
     type: 'employee' | 'contractor' | null,
@@ -185,36 +218,95 @@ type Employment = {
     | 'daily' | 'hourly' | 'fixed' | null;
     amount: number;
     currency: string | null;
-    effectiveDate: string | null;
+    effective_date: string | null;
   };
-  incomeHistory: {
+  income_history: {
     unit: 'yearly' | 'quarterly' | 'monthly'
     | 'semi_monthly' | ' bi_weekly' | 'weekly'
     | 'daily' | 'hourly' | 'fixed' | null;
     amount: number | null;
     currency: string | null;
-    effectiveDate: string | null;
+    effective_date: string | null;
   }[];
-  customFields: {
+  custom_fields: {
     name: string | null;
+    value: number | string | boolean
+  }[];
+}
+
+type IEmployment = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string;
+  title: string;
+  manager: {
+    id: string;
+  }
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  class_code: string;
+  location: Location;
+  employment: {
+    type: 'employee' | 'contractor',
+    subtype: 'full_time' | 'intern' | 'part_time' | 'temp' | 'seasonal' | 'individual_contractor'
+  };
+  department: {
+    name: string;
+  };
+  income: {
+    unit: 'yearly' | 'quarterly' | 'monthly'
+    | 'semi_monthly' | ' bi_weekly' | 'weekly'
+    | 'daily' | 'hourly' | 'fixed';
+    amount: number;
+    currency: string;
+    effective_date: string;
+  };
+  income_history: {
+    unit: 'yearly' | 'quarterly' | 'monthly'
+    | 'semi_monthly' | ' bi_weekly' | 'weekly'
+    | 'daily' | 'hourly' | 'fixed';
+    amount: number;
+    currency: string;
+    effective_date: string;
+  }[];
+  custom_fields: {
+    name: string;
     value: number | string | boolean
   }[];
 }
 
 type Payment = {
   id: string;
-  payPeriod: {
-    startDate: string;
-    endDate: string;
+  pay_period: {
+    start_date: string;
+    end_date: string;
   }
-  payDate: string;
-  debitDate: string;
-  companyDebit: Currency;
-  grossPay: Currency;
-  netPay: Currency;
-  employerTaxes: Currency;
-  employeeTaxes: Currency;
-  individualIds: string[];
+  pay_date: string;
+  debit_date: string;
+  company_debit: Currency;
+  gross_pay: Currency;
+  net_pay: Currency;
+  employer_taxes: Currency;
+  employee_taxes: Currency;
+  individual_ids: string[];
+}
+
+type IPayment = {
+  id: string;
+  pay_period: {
+    start_date: string;
+    end_date: string;
+  }
+  pay_date: string;
+  debit_date: string;
+  company_debit: Currency;
+  gross_pay: Currency;
+  net_pay: Currency;
+  employer_taxes: Currency;
+  employee_taxes: Currency;
+  individual_ids: string[];
 }
 
 type Currency = {
@@ -223,20 +315,45 @@ type Currency = {
 }
 
 type PayStatement = {
-  paymentId: string;
-  individualId: string;
+  payment_id: string;
+  individual_id: string;
   type: 'regular_payroll' | 'off_cycle_payroll' | 'one_time_payment' | null;
-  paymentMethod: 'check' | 'direct_deposit' | null;
-  grossPay: Currency,
-  netPay: Currency,
-  totalHours: number;
+  payment_method: 'check' | 'direct_deposit' | null;
+  gross_pay: Currency,
+  net_pay: Currency,
+  total_hours: number;
   earnings: Earning[];
   taxes: Tax[];
-  employeeDeductions: Deduction[];
-  employerContributions: Contribution[];
+  employee_deductions: Deduction[];
+  employer_contributions: Contribution[];
+}
+
+type IPayStatement = {
+  payment_id: string;
+  individual_id: string;
+  type: 'regular_payroll' | 'off_cycle_payroll' | 'one_time_payment';
+  payment_method: 'check' | 'direct_deposit';
+  gross_pay: Currency,
+  net_pay: Currency,
+  total_hours: number;
+  earnings: IEarning[];
+  taxes: ITax[];
+  employee_deductions: IDeduction[];
+  employer_contributions: IContribution[];
 }
 
 type Earning = {
+  type: 'salary' | 'wage' | 'reimbursement'
+  | 'overtime' | 'severance' | 'double_overtime'
+  | 'pto' | 'sick' | 'bonus' | 'commission'
+  | 'tips' | '1099' | 'other' | null;
+  name: string;
+  amount: number;
+  hours: number;
+  currency: string
+}
+
+type IEarning = {
   type: 'salary' | 'wage' | 'reimbursement'
   | 'overtime' | 'severance' | 'double_overtime'
   | 'pto' | 'sick' | 'bonus' | 'commission'
@@ -255,11 +372,32 @@ type Tax = {
   currency: string
 }
 
+type ITax = {
+  name: string;
+  type: 'state' | 'federal' | 'local' | 'fica' | null
+  amount: number;
+  employer: boolean;
+  currency: string
+}
+
 type Deduction = {
   name: string;
   amount: number;
   currency: string;
-  preTax: boolean;
+  pre_tax: boolean;
+  type: '401k' | '401k_roth' | '401k_loan'
+  | '403b' | '403b_roth' | '457' | '457_roth'
+  | 's125_medical' | 's125_dental' | 's125_vision'
+  | 'hsa_pre' | 'hsa_post' | 'fsa_medical'
+  | 'fsa_dependent_care' | 'simple_ira' | 'simple'
+  | 'commuter' | 'custom_post_tax' | 'custom_pre_tax' | null
+}
+
+type IDeduction = {
+  name: string;
+  amount: number;
+  currency: string;
+  pre_tax: boolean;
   type: '401k' | '401k_roth' | '401k_loan'
   | '403b' | '403b_roth' | '457' | '457_roth'
   | 's125_medical' | 's125_dental' | 's125_vision'
@@ -269,6 +407,18 @@ type Deduction = {
 }
 
 type Contribution = {
+  name: string;
+  amount: number;
+  currency: string;
+  type: '401k' | '401k_roth' | '401k_loan'
+  | '403b' | '403b_roth' | '457' | '457_roth'
+  | 's125_medical' | 's125_dental' | 's125_vision'
+  | 'hsa_pre' | 'hsa_post' | 'fsa_medical'
+  | 'fsa_dependent_care' | 'simple_ira' | 'simple'
+  | 'commuter' | 'custom_post_tax' | 'custom_pre_tax' | null
+}
+
+type IContribution = {
   name: string;
   amount: number;
   currency: string;
@@ -317,38 +467,3 @@ type NotImplementedError = {
   message: string,
   name: string
 }
-
-type SupportedBenefitFeature = {
-  type: string;
-  companyContribution: string[];
-  employeeDeduction: string[];
-  catchUp: undefined;
-  annualMaximum: boolean;
-  frequencies: string[];
-}
-
-// export type DataOrFactory<T> = T | ((args?: unknown) => T | Promise<T>);
-
-// export interface CompanyDataProvider<T> {
-//   companyV2: DataOrFactory<Company>;
-//   directoryV2: DataOrFactory<Person<T>[]>;
-//   individual: DataOrFactory<Individual<T> | undefined>;
-//   employment: DataOrFactory<Employment<T> | undefined>;
-//   payments: DataOrFactory<Payment<T>[]>;
-//   payStatements: DataOrFactory<{
-//     payStatements: PayStatement<T>[];
-//   }>;
-//   shouldReauthenticate: DataOrFactory<boolean>;
-//   // Benefits
-//   supportedBenefitFeaturesForCompany: DataOrFactory<SupportedBenefitFeature[]>;
-//   getAllBenefitsForCompany: DataOrFactory<any>;
-//   getBenefitForCompany: DataOrFactory<any>;
-//   createBenefitForCompany: DataOrFactory<any>;
-//   updateBenefitForCompany: DataOrFactory<any>;
-//   enrollIndividualBenefit: DataOrFactory<any>;
-//   unenrollIndividualBenefit: DataOrFactory<any>;
-//   getEnrolledIndividuals: DataOrFactory<any>;
-//   getEnrolledIndividualBenefitsPreFlight: DataOrFactory<any>;
-//   getEnrolledIndividualBenefits: DataOrFactory<any>;
-// }
-

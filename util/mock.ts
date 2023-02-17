@@ -81,7 +81,7 @@ function createOrganization(_globals: SandboxGlobal): {
 
     for (let i = 0; i < _globals.employeeSize; i++) {
         let manager: Person = getRandomElement(managers.persons)
-        const { person, individual, employment } = directoryUtil.mockPerson(manager.departmentName, manager.id, _globals)
+        const { person, individual, employment } = directoryUtil.mockPerson(manager.department, manager.id, _globals)
         managers.persons.push(person)
         managers.individuals.push(individual)
         managers.employments.push(employment)
@@ -329,24 +329,24 @@ var directoryUtil = {
         // Create Person stub
         const person: Person = {
             id: individualId,
-            firstName: firstName,
-            lastName: lastName,
-            middleName: middleName,
-            departmentName: departmentName,
+            first_name: firstName,
+            last_name: lastName,
+            middle_name: middleName,
+            department: departmentName,
             manager: {
                 id: (managerId) ? managerId : null,
             },
-            isActive: isActive,
+            is_active: isActive,
         }
 
         // Create Individual
         const individual: Individual = {
             id: individualId,
             ssn: faker.phone.number('#########'),
-            firstName: firstName,
-            lastName: lastName,
-            middleName: middleName,
-            preferredName: null, // sometimes, generate preferred name examples, not sure how to do this with Faker
+            first_name: firstName,
+            last_name: lastName,
+            middle_name: middleName,
+            preferred_name: null, // sometimes, generate preferred name examples, not sure how to do this with Faker
             gender: gender,
             ethnicity: getRandomElement([
                 "asian",
@@ -375,7 +375,7 @@ var directoryUtil = {
                 else return { data: faker.internet.email(firstName, lastName), type: type }
             }),
             // create an random size array between 1 and 4, then .map the array to return that many phone number objects
-            phoneNumbers: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
+            phone_numbers: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
                 return {
                     data: faker.phone.number('###-###-####'),
                     type: getRandomElement(['work', 'personal', 'work', 'personal', 'work', 'personal', null]) // add 'work' and 'personal more times to decrease the likelihood of null, but could still happen.
@@ -385,17 +385,17 @@ var directoryUtil = {
         // create Employment
         const employment: Employment = {
             id: individualId,
-            firstName: firstName,
-            lastName: lastName,
-            middleName: middleName,
+            first_name: firstName,
+            last_name: lastName,
+            middle_name: middleName,
             title: faker.name.jobTitle(),
             manager: {
                 id: (managerId) ? managerId : null,
             },
-            startDate: moment(startDate).format("YYYY-MM-DD"),
-            endDate: (endDate) ? moment(endDate).format("YYYY-MM-DD") : null,
-            isActive: isActive,
-            classCode: faker.phone.number('####'),
+            start_date: moment(startDate).format("YYYY-MM-DD"),
+            end_date: (endDate) ? moment(endDate).format("YYYY-MM-DD") : null,
+            is_active: isActive,
+            class_code: faker.phone.number('####'),
             location: getRandomElement(_globals.companyLocations),
             employment: {
                 type: employmentType,
@@ -408,9 +408,9 @@ var directoryUtil = {
                 unit: incomeType,
                 amount: currentIncome,
                 currency: 'USD',
-                effectiveDate: moment(effectiveDateOfCurrentIncome).format("YYYY-MM-DD")
+                effective_date: moment(effectiveDateOfCurrentIncome).format("YYYY-MM-DD")
             },
-            incomeHistory: Array.from({ length: yearsOfService }, (v, i) => i).map(x => {
+            income_history: Array.from({ length: yearsOfService }, (v, i) => i).map(x => {
                 // give 1 salary raise every year of service
                 // by decreasing income from current income amount for every year of service. 
                 // Ex: 30,000 - (30,000 * (11 / 100)) = 26,700
@@ -419,10 +419,10 @@ var directoryUtil = {
                     unit: incomeType,
                     amount: Math.round(currentIncome - (currentIncome * ((10 + x) / 100))),
                     currency: 'USD',
-                    effectiveDate: moment(effectiveDateOfCurrentIncome).subtract(x + 1, 'years').format("YYYY-MM-DD")
+                    effective_date: moment(effectiveDateOfCurrentIncome).subtract(x + 1, 'years').format("YYYY-MM-DD")
                 }
             }),
-            customFields: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
+            custom_fields: Array.from({ length: Math.floor(Math.random() * 3) }, (v, i) => i).map(x => {
                 return {
                     name: faker.lorem.word(),
                     value: faker.lorem.words(6)
@@ -447,8 +447,8 @@ var paymentUtil = {
         let individualPayStatements: PayStatement[] = []
 
         const isEmployedDuringPayPeriod = (employee: Employment) => {
-            if (!employee.endDate) return true // they are currently employed at the company
-            return endDate.isAfter(moment(employee.startDate)) && endDate.isBefore(moment(employee.endDate))
+            if (!employee.end_date) return true // they are currently employed at the company
+            return endDate.isAfter(moment(employee.start_date)) && endDate.isBefore(moment(employee.end_date))
         }
 
         // check which employees were employed during this pay period
@@ -495,23 +495,23 @@ var paymentUtil = {
 
             // Build the pay statement for the individual
             const statement: PayStatement = {
-                paymentId: paymentId,
-                individualId: employee.id,
+                payment_id: paymentId,
+                individual_id: employee.id,
                 type: 'regular_payroll',
-                paymentMethod: 'direct_deposit',
-                grossPay: {
+                payment_method: 'direct_deposit',
+                gross_pay: {
                     amount: employeeEarningsAmount,
                     currency: 'usd'
                 },
-                netPay: {
+                net_pay: {
                     amount: netPay,
                     currency: 'usd'
                 },
-                totalHours: totalHoursWorked,
+                total_hours: totalHoursWorked,
                 earnings: earnings,
                 taxes: taxes,
-                employeeDeductions: deductions,
-                employerContributions: contributions,
+                employee_deductions: deductions,
+                employer_contributions: contributions,
             };
 
             individualIds.push(employee.id) // record employee ids to add to current pay period
@@ -526,33 +526,33 @@ var paymentUtil = {
         // Build the payment
         const payment: Payment = {
             id: paymentId,
-            payPeriod: {
-                startDate: startDate.format("YYYY-MM-DD"),
-                endDate: endDate.format("YYYY-MM-DD"),
+            pay_period: {
+                start_date: startDate.format("YYYY-MM-DD"),
+                end_date: endDate.format("YYYY-MM-DD"),
             },
-            payDate: payDate.format('YYYY-MM-DD'),
-            debitDate: debitDate.format('YYYY-MM-DD'),
-            companyDebit: {
+            pay_date: payDate.format('YYYY-MM-DD'),
+            debit_date: debitDate.format('YYYY-MM-DD'),
+            company_debit: {
                 amount: totalCompanyDebit,
                 currency: 'usd'
             },
-            grossPay: {
+            gross_pay: {
                 amount: totalGrossPay,
                 currency: 'usd'
             },
-            netPay: {
+            net_pay: {
                 amount: totalNetPay,
                 currency: 'usd'
             },
-            employerTaxes: {
+            employer_taxes: {
                 amount: totalEmployerTaxes,
                 currency: 'usd'
             },
-            employeeTaxes: {
+            employee_taxes: {
                 amount: totalEmployeeTaxes,
                 currency: 'usd'
             },
-            individualIds,
+            individual_ids: individualIds,
         }
 
         return { payment, individualPayStatements }
@@ -789,28 +789,28 @@ var paymentUtil = {
             {
                 name: '401(k) plan %',
                 type: '401k',
-                preTax: true,
+                pre_tax: true,
                 amount: Math.round(grossPay * 0.06),
                 currency: 'usd'
             },
             {
                 name: 'MED PRE TAX',
                 type: 's125_medical',
-                preTax: true,
+                pre_tax: true,
                 amount: Math.round(grossPay * 0.01),
                 currency: 'usd'
             },
             {
                 name: 'DEN PRE TAX',
                 type: 's125_dental',
-                preTax: true,
+                pre_tax: true,
                 amount: Math.round(grossPay * 0.006),
                 currency: 'usd'
             },
             {
                 name: 'VIS PRE TAX',
                 type: 's125_vision',
-                preTax: true,
+                pre_tax: true,
                 amount: Math.round(grossPay * 0.002),
                 currency: 'usd'
             },
@@ -819,14 +819,14 @@ var paymentUtil = {
             {
                 name: 'Child support 1',
                 type: null,
-                preTax: false,
+                pre_tax: false,
                 amount: 0,
                 currency: 'usd'
             },
             {
                 name: 'Group Life Term',
                 type: null,
-                preTax: true,
+                pre_tax: true,
                 amount: 0,
                 currency: 'usd'
             },

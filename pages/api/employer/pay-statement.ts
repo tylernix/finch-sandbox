@@ -60,7 +60,7 @@ export default async function payStatement(
         return res.status(501).json(parsedPayStatements);
 
       requestedIds.forEach(id => {
-        const match: PayStatement | undefined = parsedPayStatements.find(payment => payment.paymentId === id)
+        const match: PayStatement | undefined = parsedPayStatements.find(payment => payment.payment_id === id)
         if (match)
           response.push({
             payment_id: id,
