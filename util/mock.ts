@@ -109,7 +109,7 @@ function createPayments(_globals: SandboxGlobal, employees: Employment[]): {
     const today = moment()
     const twoYearsAgo = moment().subtract('2', 'years')
 
-    // unique generate payroll for this month depending on day of month
+    // TODO: unique generate payroll for this month depending on day of month
     //const paymentId = faker.datatype.uuid()
     //console.log("Payment: this month payroll: " + today.toDate())
 
@@ -139,7 +139,7 @@ function createPayments(_globals: SandboxGlobal, employees: Employment[]): {
         )
 
         payments.push(payment_2)
-        payStatements_1.forEach(payStatement => payStatements.push(payStatement))
+        payStatements_2.forEach(payStatement => payStatements.push(payStatement))
 
 
         //console.log(today.endOf('month'))

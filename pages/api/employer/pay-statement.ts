@@ -55,30 +55,39 @@ export default async function payStatement(
       let response: any = [];
       const parsedPayStatements: PayStatement[] | NotImplementedError = JSON.parse(payments);
 
-      // If parsedPayStatements is of type notImplementedError, then return 501
+      // If parsedPayStatements is of type NotImplementedError, then return 501
       if ("status" in parsedPayStatements)
         return res.status(501).json(parsedPayStatements);
 
+      // For each payment_id sent in the request...
       requestedIds.forEach(id => {
-        const match: PayStatement | undefined = parsedPayStatements.find(payment => payment.payment_id === id)
-        if (match)
+        const matches: PayStatement[] = parsedPayStatements.filter(payment => payment.payment_id === id)
+        matches.forEach(match => delete match.payment_id) // remove payment_id because it is not included in our data model for pay_statement.
+
+        if (matches)
           response.push({
             payment_id: id,
             code: 200,
-            body: match
+            body: {
+              "paging": {
+                "count": matches.length,
+                "offset": 0
+              },
+              "pay_statements": matches
+            }
           })
         else
-          response.push(
-            {
-              "payment_id": id,
-              "code": 400,
-              "body": {
-                "error_name": "invalid_request_error",
-                "error_message": "No payment with id " + id
-              }
-            },
-          )
+          response.push({
+            "payment_id": id,
+            "code": 400,
+            "body": {
+              "error_name": "invalid_request_error",
+              "error_message": "No payment with id " + id
+            }
+          })
       })
+
+
       if (response) {
         return res.status(200).json(
           {

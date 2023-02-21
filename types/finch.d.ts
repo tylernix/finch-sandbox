@@ -315,7 +315,7 @@ type Currency = {
 }
 
 type PayStatement = {
-  payment_id: string;
+  payment_id?: string; // payment_id is optional because it is eventually removed in /api/employer/pay-statement.64
   individual_id: string;
   type: 'regular_payroll' | 'off_cycle_payroll' | 'one_time_payment' | null;
   payment_method: 'check' | 'direct_deposit' | null;
