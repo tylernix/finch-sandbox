@@ -3,6 +3,7 @@ import { SandboxGlobal, Sandbox, Company, Department, Provider, Location, Accoun
 import moment from 'moment'
 
 // TODO: Set random default Finch fields to use like sample deduction names or employee types so that they apply across the whole employer creation consistently but change with every new company created.
+// - focus on a few class codes
 
 function createSandbox(employeeSize: number, companyId: string): ISandbox {
     const companyName = `${titleCase(faker.word.adjective())} ${titleCase(faker.word.noun())}${getRandomElement([', Inc', ' LLC'])}`
@@ -99,11 +100,6 @@ function createPayments(_globals: SandboxGlobal, employees: Employment[]): {
     // Reusable fields
     let payments: Payment[] = []
     let payStatements: PayStatement[] = []
-    // let totalCompanyDebit = 0;
-    // let totalGrossPay = 0;
-    // let totalNetPay = 0;
-    // let totalEmployerTaxes = 0;
-    // let totalEmployeeTaxes = 0;
 
     // Generate pay data for two years from today
     const today = moment()
