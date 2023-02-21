@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { validToken, getTokenFromReqAuthHeader } from '@/util/access-token'
 import redis from '@/util/redis'
-import { Person } from 'types/finch'
+import { Directory } from 'types/finch'
 
 
 export default async function directory(
@@ -27,7 +27,7 @@ export default async function directory(
     try {
       const sandbox = await redis.get(token)
       const directory = sandbox !== null ? await redis.hget(sandbox, 'directory') : ''
-      const parsedDirectory: Person[] = directory !== null ? JSON.parse(directory) : null
+      const parsedDirectory: Directory[] = directory !== null ? JSON.parse(directory) : null
 
       if (directory) {
         //console.log(parsedDirectory);
