@@ -1,4 +1,4 @@
-import { Provider, Sandbox, Company, ISandbox, Account, Location, Department } from "types/finch";
+import { Provider, Sandbox, Company, ISandbox, Account, Location, Department, Individual, Email, PhoneNumber } from "types/finch";
 
 const NotImplementedError = {
     "statusCode": 501,
@@ -63,8 +63,51 @@ export default function filterSandboxByProvider(sandbox: ISandbox, provider: Pro
                     : null,
             }
             : NotImplementedError,
-        directory: (directory) ? sandbox.directory : NotImplementedError,
-        individual: (individual) ? sandbox.individual : NotImplementedError,
+        directory: (directory) ? sandbox.directory.map(person => {
+            return {
+                id: person.id,
+                first_name: (directory.first_name) ? person.first_name : null,
+                middle_name: (directory.middle_name) ? person.middle_name : null,
+                last_name: (directory.last_name) ? person.last_name : null,
+                manager: {
+                    id: (directory.manager.id) ? person.manager.id : null,
+                },
+                department: {
+                    name: (directory.department.name) ? person.department.name : null,
+                },
+                is_active: person.is_active,
+            }
+        }) : NotImplementedError,
+        individual: (individual) ? sandbox.individual.map(ind => {
+            return {
+                id: ind.id,
+                ssn: ind.ssn,
+                first_name: (individual.first_name) ? ind.first_name : null,
+                middle_name: (individual.middle_name) ? ind.middle_name : null,
+                last_name: (individual.last_name) ? ind.last_name : null,
+                preferred_name: (individual.preferred_name) ? ind.preferred_name : null,
+                dob: (individual.dob) ? ind.dob : null,
+                emails: (individual.email)
+                    ? ind.emails.map(email => {
+                        return {
+                            data: (individual.emails.data) ? email.data : null,
+                            type: (individual.emails.type) ? email.type : null,
+                        } as Email
+                    })
+                    : null,
+                phone_numbers: (individual.phone_number)
+                    ? ind.phone_numbers.map(phone => {
+                        return {
+                            data: (individual.phone_numbers.data) ? phone.data : null,
+                            type: (individual.phone_numbers.data) ? phone.type : null,
+                        } as PhoneNumber
+                    })
+                    : null,
+                gender: (individual.gender) ? ind.gender : null,
+                ethnicity: (individual.ethnicity) ? ind.ethnicity : null,
+                residence: (individual.residence) ? ind.residence : null,
+            }
+        }) : NotImplementedError,
         employment: (employment) ? sandbox.employment : NotImplementedError,
         payments: (payment) ? sandbox.payments : NotImplementedError,
         payStatements: (pay_statement) ? sandbox.payStatements : NotImplementedError,

@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { SandboxGlobal, Sandbox, Company, Department, Provider, Location, Account, Person, Individual, Employment, Payment, PayStatement, Deduction, Contribution, Tax, Earning, ISandbox, ICompany, IDepartment, ILocation, IAccount } from 'types/finch'
+import { SandboxGlobal, Employment, Payment, PayStatement, Deduction, Contribution, Tax, Earning, ISandbox, ICompany, IDepartment, ILocation, IAccount, IDirectory, IIndividual } from 'types/finch'
 import moment from 'moment'
 
 // TODO: Set random default Finch fields to use like sample deduction names or employee types so that they apply across the whole employer creation consistently but change with every new company created.
@@ -56,14 +56,14 @@ function createCompany(_globals: SandboxGlobal): ICompany {
 }
 
 function createOrganization(_globals: SandboxGlobal): {
-    directory: Person[],
-    individuals: Individual[],
+    directory: IDirectory[],
+    individuals: IIndividual[],
     employments: Employment[]
 } {
     console.log("Directory: Creating employee directory")
 
-    let directory: Person[] = []
-    let individuals: Individual[] = []
+    let directory: IDirectory[] = []
+    let individuals: IIndividual[] = []
     let employments: Employment[] = []
 
     console.log("Directory: initial company employee size: " + _globals.employeeSize)
@@ -81,8 +81,8 @@ function createOrganization(_globals: SandboxGlobal): {
     _globals.employeeSize -= directory.length
 
     for (let i = 0; i < _globals.employeeSize; i++) {
-        let manager: Person = getRandomElement(managers.persons)
-        const { person, individual, employment } = directoryUtil.mockPerson(manager.department, manager.id, _globals)
+        let manager: IDirectory = getRandomElement(managers.persons)
+        const { person, individual, employment } = directoryUtil.mockPerson(manager.department.name, manager.id, _globals)
         managers.persons.push(person)
         managers.individuals.push(individual)
         managers.employments.push(employment)
@@ -257,8 +257,8 @@ var companyUtil = {
 
 var directoryUtil = {
     mockManagers(_globals: SandboxGlobal): {
-        persons: Person[],
-        individuals: Individual[],
+        persons: IDirectory[],
+        individuals: IIndividual[],
         employments: Employment[]
     } {
         console.log("Directory: Creating Managers")
@@ -280,8 +280,8 @@ var directoryUtil = {
         // Create random fake managers
         // Right now, this manager-to-employee structure is dependent on createDepartments tree levels.
         let managers: {
-            persons: Person[],
-            individuals: Individual[],
+            persons: IDirectory[],
+            individuals: IIndividual[],
             employments: Employment[]
         } = {
             persons: [],
@@ -298,8 +298,8 @@ var directoryUtil = {
         return managers
     },
     mockPerson(departmentName: string, managerId: string | null, _globals: SandboxGlobal): {
-        person: Person;
-        individual: Individual;
+        person: IDirectory;
+        individual: IIndividual;
         employment: Employment;
     } {
         //console.log("Directory: Creating Person")
@@ -323,12 +323,14 @@ var directoryUtil = {
         const effectiveDateOfCurrentIncome = (isActive && yearsOfService >= 1) ? faker.date.recent(365) : faker.date.recent(365, endDate?.toDateString())
 
         // Create Person stub
-        const person: Person = {
+        const person: IDirectory = {
             id: individualId,
             first_name: firstName,
             last_name: lastName,
             middle_name: middleName,
-            department: departmentName,
+            department: {
+                name: departmentName
+            },
             manager: {
                 id: (managerId) ? managerId : null,
             },
@@ -336,7 +338,7 @@ var directoryUtil = {
         }
 
         // Create Individual
-        const individual: Individual = {
+        const individual: IIndividual = {
             id: individualId,
             ssn: faker.phone.number('#########'),
             first_name: firstName,

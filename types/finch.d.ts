@@ -10,7 +10,7 @@ type SandboxGlobal = {
 }
 type Sandbox = {
   company: Company | NotImplementedError,
-  directory: Person[] | NotImplementedError,
+  directory: Directory[] | NotImplementedError,
   individual: Individual[] | NotImplementedError,
   employment: Employment[] | NotImplementedError,
   payments: Payment[] | NotImplementedError,
@@ -19,8 +19,8 @@ type Sandbox = {
 
 type ISandbox = {
   company: ICompany,
-  directory: Person[],
-  individual: Individual[],
+  directory: IDirectory[],
+  individual: IIndividual[],
   employment: Employment[],
   payments: Payment[],
   payStatements: PayStatement[],
@@ -125,24 +125,28 @@ type IAccount = {
   routing_number: string;
 }
 
-type Person = {
+type Directory = {
   id: string;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   middle_name: string | null;
-  department: string;
+  department: {
+    name: string | null
+  },
   manager: {
     id: string | null;
   }
   is_active: boolean;
 }
 
-type IPerson = {
+type IDirectory = {
   id: string;
   first_name: string;
   last_name: string;
-  middle_name: string | null;
-  department: string;
+  middle_name: string;
+  department: {
+    name: string
+  },
   manager: {
     id: string | null;
   }
@@ -152,22 +156,16 @@ type IPerson = {
 type Individual = {
   id: string;
   ssn?: string;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   middle_name: string | null;
   preferred_name: string | null;
   gender: string | null;
   ethnicity: string | null;
-  dob: string;
+  dob: string | null;
   residence: Location | null;
-  emails: {
-    data: string | null;
-    type: string | null;
-  }[];
-  phone_numbers: {
-    data: string | null;
-    type: string | null;
-  }[];
+  emails: Email[] | null;
+  phone_numbers: PhoneNumber[] | null;
 }
 
 type IIndividual = {
@@ -176,19 +174,33 @@ type IIndividual = {
   first_name: string;
   last_name: string;
   middle_name: string;
-  preferred_name: string;
+  preferred_name: string | null;
   gender: string;
   ethnicity: string;
   dob: string;
   residence: Location;
-  emails: {
-    data: string;
-    type: string;
-  }[];
-  phone_numbers: {
-    data: string;
-    type: string;
-  }[];
+  emails: IEmail[];
+  phone_numbers: IPhoneNumber[];
+}
+
+type Email = {
+  data: string | null;
+  type: string | null;
+}
+
+type IEmail = {
+  data: string;
+  type: string;
+}
+
+type PhoneNumber = {
+  data: string | null;
+  type: string | null;
+}
+
+type IPhoneNumber = {
+  data: string;
+  type: string;
 }
 
 type Employment = {
