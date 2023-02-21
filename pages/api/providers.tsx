@@ -1,14 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { validToken, getTokenFromReqAuthHeader } from '@/util/access-token'
 import redis from '@/util/redis'
-import { PROVIDER_COMPATIBILITY } from '@/util/constants'
+import { FINCH_PROVIDERS } from '@/util/constants'
 
 
-export default async function introspect(
+export default async function providers(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    console.log(req.method + " /api/introspect")
+    console.log(req.method + " /api/providers")
     const token = getTokenFromReqAuthHeader(req)
 
     if (!token)
@@ -22,7 +22,7 @@ export default async function introspect(
 
     if (req.method === 'GET') {
         try {
-            return res.status(200).json(PROVIDER_COMPATIBILITY)
+            return res.status(200).json(FINCH_PROVIDERS)
         }
         catch (error) {
             console.error(error);

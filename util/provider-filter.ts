@@ -14,7 +14,7 @@ export default function filterSandboxByProvider(sandbox: ISandbox, provider: Pro
     const individual = provider.compatibility.individual
     const employment = provider.compatibility.employment
     const payment = provider.compatibility.payment
-    const payStatement = provider.compatibility.pay_statement
+    const pay_statement = provider.compatibility.pay_statement
 
 
     const _sandbox: Sandbox = {
@@ -63,11 +63,11 @@ export default function filterSandboxByProvider(sandbox: ISandbox, provider: Pro
                     : null,
             }
             : NotImplementedError,
-        directory: (provider.compatibility.directory) ? sandbox.directory : NotImplementedError,
-        individual: (provider.compatibility.individual) ? sandbox.individual : NotImplementedError,
-        employment: (provider.compatibility.employment) ? sandbox.employment : NotImplementedError,
-        payments: (provider.compatibility.payment) ? sandbox.payments : NotImplementedError,
-        payStatements: (provider.compatibility.pay_statement) ? sandbox.payStatements : NotImplementedError,
+        directory: (directory) ? sandbox.directory : NotImplementedError,
+        individual: (individual) ? sandbox.individual : NotImplementedError,
+        employment: (employment) ? sandbox.employment : NotImplementedError,
+        payments: (payment) ? sandbox.payments : NotImplementedError,
+        payStatements: (pay_statement) ? sandbox.payStatements : NotImplementedError,
     }
 
     return _sandbox
