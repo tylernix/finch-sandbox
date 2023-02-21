@@ -81,6 +81,7 @@ To learn more about Finch, take a look at the following resources:
 ## TODO
 
 - filter fields by provider compatibility
+- finish creating pay statement for current month
 - double check income history effective date is working properly
 
 ## Notes

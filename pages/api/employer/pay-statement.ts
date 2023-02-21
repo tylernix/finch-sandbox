@@ -64,7 +64,7 @@ export default async function payStatement(
         const matches: PayStatement[] = parsedPayStatements.filter(payment => payment.payment_id === id)
         matches.forEach(match => delete match.payment_id) // remove payment_id because it is not included in our data model for pay_statement.
 
-        if (matches)
+        if (matches.length != 0)
           response.push({
             payment_id: id,
             code: 200,
