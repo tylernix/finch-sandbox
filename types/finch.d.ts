@@ -21,7 +21,7 @@ type ISandbox = {
   company: ICompany,
   directory: IDirectory[],
   individual: IIndividual[],
-  employment: Employment[],
+  employment: IEmployment[],
   payments: Payment[],
   payStatements: PayStatement[],
 }
@@ -178,7 +178,7 @@ type IIndividual = {
   gender: string;
   ethnicity: string;
   dob: string;
-  residence: Location;
+  residence: ILocation;
   emails: IEmail[];
   phone_numbers: IPhoneNumber[];
 }
@@ -205,16 +205,16 @@ type IPhoneNumber = {
 
 type Employment = {
   id: string;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   middle_name: string | null;
   title: string | null;
   manager: {
     id: string | null;
   }
-  start_date: string;
+  start_date: string | null;
   end_date: string | null;
-  is_active: boolean;
+  is_active: boolean | null;
   class_code: string | null;
   location: Location | null;
   employment: {
@@ -224,26 +224,12 @@ type Employment = {
   department: {
     name: string | null;
   };
-  income: {
-    unit: 'yearly' | 'quarterly' | 'monthly'
-    | 'semi_monthly' | ' bi_weekly' | 'weekly'
-    | 'daily' | 'hourly' | 'fixed' | null;
-    amount: number;
-    currency: string | null;
-    effective_date: string | null;
-  };
-  income_history: {
-    unit: 'yearly' | 'quarterly' | 'monthly'
-    | 'semi_monthly' | ' bi_weekly' | 'weekly'
-    | 'daily' | 'hourly' | 'fixed' | null;
-    amount: number | null;
-    currency: string | null;
-    effective_date: string | null;
-  }[];
+  income: Income | null;
+  income_history: Income[] | null;
   custom_fields: {
-    name: string | null;
+    name: string;
     value: number | string | boolean
-  }[];
+  }[] | null;
 }
 
 type IEmployment = {
@@ -253,13 +239,13 @@ type IEmployment = {
   middle_name: string;
   title: string;
   manager: {
-    id: string;
+    id: string | null;
   }
   start_date: string;
-  end_date: string;
+  end_date: string | null;
   is_active: boolean;
   class_code: string;
-  location: Location;
+  location: ILocation;
   employment: {
     type: 'employee' | 'contractor',
     subtype: 'full_time' | 'intern' | 'part_time' | 'temp' | 'seasonal' | 'individual_contractor'
@@ -267,26 +253,30 @@ type IEmployment = {
   department: {
     name: string;
   };
-  income: {
-    unit: 'yearly' | 'quarterly' | 'monthly'
-    | 'semi_monthly' | ' bi_weekly' | 'weekly'
-    | 'daily' | 'hourly' | 'fixed';
-    amount: number;
-    currency: string;
-    effective_date: string;
-  };
-  income_history: {
-    unit: 'yearly' | 'quarterly' | 'monthly'
-    | 'semi_monthly' | ' bi_weekly' | 'weekly'
-    | 'daily' | 'hourly' | 'fixed';
-    amount: number;
-    currency: string;
-    effective_date: string;
-  }[];
+  income: IIncome;
+  income_history: IIncome[];
   custom_fields: {
     name: string;
     value: number | string | boolean
   }[];
+}
+
+type Income = {
+  unit: 'yearly' | 'quarterly' | 'monthly'
+  | 'semi_monthly' | 'bi_weekly' | 'weekly'
+  | 'daily' | 'hourly' | 'fixed' | null;
+  amount: number | null;
+  currency: string | null;
+  effective_date: string | null;
+}
+
+type IIncome = {
+  unit: 'yearly' | 'quarterly' | 'monthly'
+  | 'semi_monthly' | 'bi_weekly' | 'weekly'
+  | 'daily' | 'hourly' | 'fixed';
+  amount: number;
+  currency: string;
+  effective_date: string;
 }
 
 type Payment = {

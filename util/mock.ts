@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { SandboxGlobal, Employment, Payment, PayStatement, Deduction, Contribution, Tax, Earning, ISandbox, ICompany, IDepartment, ILocation, IAccount, IDirectory, IIndividual } from 'types/finch'
+import { SandboxGlobal, Payment, PayStatement, Deduction, Contribution, Tax, Earning, ISandbox, ICompany, IDepartment, ILocation, IAccount, IDirectory, IIndividual, IEmployment } from 'types/finch'
 import moment from 'moment'
 
 // TODO: Set random default Finch fields to use like sample deduction names or employee types so that they apply across the whole employer creation consistently but change with every new company created.
@@ -58,13 +58,13 @@ function createCompany(_globals: SandboxGlobal): ICompany {
 function createOrganization(_globals: SandboxGlobal): {
     directory: IDirectory[],
     individuals: IIndividual[],
-    employments: Employment[]
+    employments: IEmployment[]
 } {
     console.log("Directory: Creating employee directory")
 
     let directory: IDirectory[] = []
     let individuals: IIndividual[] = []
-    let employments: Employment[] = []
+    let employments: IEmployment[] = []
 
     console.log("Directory: initial company employee size: " + _globals.employeeSize)
     const managers = directoryUtil.mockManagers(_globals)
@@ -91,7 +91,7 @@ function createOrganization(_globals: SandboxGlobal): {
 
 }
 
-function createPayments(_globals: SandboxGlobal, employees: Employment[]): {
+function createPayments(_globals: SandboxGlobal, employees: IEmployment[]): {
     payments: Payment[],
     payStatements: PayStatement[],
 } {
@@ -259,7 +259,7 @@ var directoryUtil = {
     mockManagers(_globals: SandboxGlobal): {
         persons: IDirectory[],
         individuals: IIndividual[],
-        employments: Employment[]
+        employments: IEmployment[]
     } {
         console.log("Directory: Creating Managers")
 
@@ -282,7 +282,7 @@ var directoryUtil = {
         let managers: {
             persons: IDirectory[],
             individuals: IIndividual[],
-            employments: Employment[]
+            employments: IEmployment[]
         } = {
             persons: [],
             individuals: [],
@@ -300,7 +300,7 @@ var directoryUtil = {
     mockPerson(departmentName: string, managerId: string | null, _globals: SandboxGlobal): {
         person: IDirectory;
         individual: IIndividual;
-        employment: Employment;
+        employment: IEmployment;
     } {
         //console.log("Directory: Creating Person")
 
@@ -381,7 +381,7 @@ var directoryUtil = {
             })
         }
         // create Employment
-        const employment: Employment = {
+        const employment: IEmployment = {
             id: individualId,
             first_name: firstName,
             last_name: lastName,
@@ -432,7 +432,7 @@ var directoryUtil = {
 }
 
 var paymentUtil = {
-    mockPayPeriod(paymentId: string, startDate: moment.Moment, endDate: moment.Moment, employees: Employment[]): { payment: Payment; individualPayStatements: PayStatement[] } {
+    mockPayPeriod(paymentId: string, startDate: moment.Moment, endDate: moment.Moment, employees: IEmployment[]): { payment: Payment; individualPayStatements: PayStatement[] } {
         //console.log("Payment: Generating payroll for paymentId: " + paymentId)
 
         // Reusable fields
@@ -444,7 +444,7 @@ var paymentUtil = {
         let individualIds: string[] = []
         let individualPayStatements: PayStatement[] = []
 
-        const isEmployedDuringPayPeriod = (employee: Employment) => {
+        const isEmployedDuringPayPeriod = (employee: IEmployment) => {
             if (!employee.end_date) return true // they are currently employed at the company
             return endDate.isAfter(moment(employee.start_date)) && endDate.isBefore(moment(employee.end_date))
         }
@@ -555,7 +555,7 @@ var paymentUtil = {
 
         return { payment, individualPayStatements }
     },
-    mockEarnings(employee: Employment, totalHoursWorked: number): { earnings: Earning[], employeeEarningsAmount: number } {
+    mockEarnings(employee: IEmployment, totalHoursWorked: number): { earnings: Earning[], employeeEarningsAmount: number } {
         let overtimeHours = 0
         let baseHours = totalHoursWorked
         let earnings: Earning[] = []
@@ -641,7 +641,7 @@ var paymentUtil = {
 
         }
     },
-    mockTaxes(employee: Employment, grossPay: number): { taxes: Tax[], employeeTaxesAmount: number, employerTaxesAmount: number } {
+    mockTaxes(employee: IEmployment, grossPay: number): { taxes: Tax[], employeeTaxesAmount: number, employerTaxesAmount: number } {
         // Calculate taxes + get rid of decimal places
         // Remember, amounts are in USD cents.
 
@@ -780,7 +780,7 @@ var paymentUtil = {
         //console.log(`Payment: State income tax: ${taxRate} for yearly income $${yearlyIncome / 100}`)
         return taxRate;
     },
-    mockDeductions(employee: Employment, grossPay: number): { deductions: Deduction[], employeeDeductionsAmount: number } {
+    mockDeductions(employee: IEmployment, grossPay: number): { deductions: Deduction[], employeeDeductionsAmount: number } {
         let finalDeductions: Deduction[] = []
         let employeeDeductionsAmount: number = 0
         const defaultDeductions: Deduction[] = [
@@ -839,7 +839,7 @@ var paymentUtil = {
 
         return { deductions: finalDeductions, employeeDeductionsAmount }
     },
-    mockContributions(employee: Employment, grossPay: number): { contributions: Contribution[], employerContributionsAmount: number } {
+    mockContributions(employee: IEmployment, grossPay: number): { contributions: Contribution[], employerContributionsAmount: number } {
         let finalContributions: Contribution[] = []
         let employerContributionsAmount: number = 0
         const defaultContributions: Contribution[] = [

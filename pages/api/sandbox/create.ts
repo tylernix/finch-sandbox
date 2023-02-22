@@ -2,8 +2,6 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import redis from '@/util/redis'
 import { v4 as uuidv4 } from 'uuid'
 import { FINCH_PROVIDERS } from '@/util/constants'
-import * as mock from '@/util/mock'
-import { Provider } from 'types/finch'
 import MockProvider from '@/util/providers'
 
 export default async function createSandbox(

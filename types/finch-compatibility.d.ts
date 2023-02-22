@@ -89,8 +89,10 @@ export interface Employment_Fields {
         unit: boolean;
         amount: boolean;
         currency: boolean;
-        history: boolean;
+        effective_date: boolean;
+
     };
+    income_history: boolean;
     class_code: boolean;
     custom_fields: boolean;
 }
@@ -118,12 +120,15 @@ export interface Paystatement_Fields {
     total_hours: boolean;
     gross_pay: boolean;
     net_pay: boolean;
+    earning: boolean;
     earnings: {
         type: boolean;
         name: boolean;
         amount: boolean;
         currency: boolean;
+        hours: boolean;
     },
+    employee_deduction: boolean;
     employee_deductions: {
         type: boolean;
         name: boolean;
@@ -131,11 +136,14 @@ export interface Paystatement_Fields {
         currency: boolean;
         pre_tax: boolean;
     },
+    employer_contribution: boolean;
     employer_contributions: {
+        type: boolean;
         name: boolean;
         amount: boolean;
         currency: boolean;
     },
+    tax: boolean;
     taxes: {
         type: boolean;
         name: boolean;
