@@ -28,7 +28,6 @@ function createSandbox(employeeSize: number, companyId: string): ISandbox {
         employment: employments,
         payments: payments,
         payStatements: payStatements
-
     }
 
     return _sandbox
@@ -101,9 +100,10 @@ function createPayments(_globals: SandboxGlobal, employees: IEmployment[]): {
     let payments: Payment[] = []
     let payStatements: PayStatement[] = []
 
-    // Generate pay data for two years from today
+    // Generate pay data for from today
     const today = moment()
-    const twoYearsAgo = moment().subtract('2', 'years')
+    const oneYearAgo = moment().subtract('1', 'years')
+    //const twoYearsAgo = moment().subtract('2', 'years')
 
     // TODO: unique generate payroll for this month depending on day of month
     //const paymentId = faker.datatype.uuid()
@@ -112,7 +112,7 @@ function createPayments(_globals: SandboxGlobal, employees: IEmployment[]): {
     // generate payroll the same way for all other months starting with the previous month
     // Example: if today is January 17, start generating regular payroll in February = Feb 1-15 & Feb 16-28, then repeat for two years.
     today.subtract(1, 'month')
-    while (today.isAfter(twoYearsAgo)) {
+    while (today.isAfter(oneYearAgo)) {
         //console.log("Payment: Generating pay data for month: " + today.year() + "-" + today.month())
 
         // create first bi-weekly pay period (1)

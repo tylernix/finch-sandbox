@@ -62,8 +62,11 @@ export default async function payStatement(
       // For each payment_id sent in the request...
       requestedIds.forEach(id => {
         const matches: PayStatement[] = parsedPayStatements.filter(payment => payment.payment_id === id)
-        matches.forEach(match => delete match.payment_id) // remove payment_id because it is not included in our data model for pay_statement.
 
+        // remove payment_id because it is not included in our data model for pay_statement, but necessary to correlating pay statements to payment_ids (above)
+        matches.forEach(match => delete match.payment_id)
+
+        console.log(matches)
         if (matches.length != 0)
           response.push({
             payment_id: id,
@@ -86,7 +89,6 @@ export default async function payStatement(
             }
           })
       })
-
 
       if (response) {
         return res.status(200).json(

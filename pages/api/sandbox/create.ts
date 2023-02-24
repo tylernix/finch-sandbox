@@ -33,8 +33,8 @@ export default async function createSandbox(
       ))
         return res.status(400).json("Invalid products scope types")
 
-      if (employee_size > 1000 || employee_size <= 0)
-        return res.status(400).json("Employee size must be between 1 and 1000.")
+      if (employee_size > 200 || employee_size <= 0)
+        return res.status(400).json("Employee size must be between 1 and 200.")
 
       // Get valid provider information
       const provider = FINCH_PROVIDERS.find(provider => provider.id === provider_id)

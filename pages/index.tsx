@@ -7,8 +7,9 @@ curl https://finch-sandbox.vercel.app/api/sandbox/create \\
   -X POST \\
   -H "Content-Type: application/json" \\
   --data-raw '{
-    "provider": "gusto",
-    "products": ["company", "directory", "individual", "employment", "payment", "pay_statement"]
+    "provider_id": "gusto",
+    "products": ["company", "directory", "individual", "employment", "payment", "pay_statement"],
+    "employee_size": 10
   }'
 `
 const curl2 = `
@@ -52,23 +53,43 @@ const Home: NextPage = () => {
                 The Finch sandbox mirrors the features on the Finch production servers. While some Finch features do not apply to the sandbox, such as Finch Connect Flow, data syncing schedule, webhooks, rate limiting, and the Benefits endpoints (in progress), the sandbox has the same Finch API feature set as the live environment. You can test your Finch processes in the sandbox since they will behave the same in the sandbox environment as they do on production servers.
               </p>
               <p>
-                The sandbox currently supports 5 mock providers:
+                The sandbox currently supports 29 mock providers:
               </p>
               <ul role="list">
-                <li><strong>Gusto</strong> - `gusto`</li>
-                <li><strong>BambooHR</strong> - `bamboohr`</li>
-                <li><strong>Justworks</strong> - `justworks`</li>
-                <li><strong>Paychex Flex</strong>- `paychex_flex`</li>
-                <li><strong>Workday</strong> - `workday`</li>
+                <li><strong>ADP Run</strong>  - `adp_run`</li>
+                <li><strong>Bamboo HR</strong>  - `bamboo_hr`</li>
+                <li><strong>Bamboo HR (API)</strong>  - `bamboo_hr_api`</li>
+                <li><strong>HiBob</strong>  - `bob`</li>
+                <li><strong>Gusto</strong>  - `gusto`</li>
+                <li><strong>Humaans</strong>  - `humaans`</li>
+                <li><strong>Insperity</strong>  - `insperity`</li>
+                <li><strong>Justworks</strong>  - `justworks`</li>
+                <li><strong>Namely</strong>  - `namely`</li>
+                <li><strong>Paychex Flex</strong>  - `paychex_flex`</li>
+                <li><strong>Paychex Flex (API)</strong>  - `paychex_flex_api`</li>
+                <li><strong>Paycom</strong>  - `paycom`</li>
+                <li><strong>Paycom (API)</strong>  - `paycom_api`</li>
+                <li><strong>Paylocity</strong>  - `paylocity`</li>
+                <li><strong>Paylocity (API)</strong>  - `paylocity_api`</li>
+                <li><strong>Personio</strong>  - `personio`</li>
+                <li><strong>Quickbooks</strong>  - `quickbooks`</li>
+                <li><strong>Rippling</strong>  - `rippling`</li>
+                <li><strong>Sage HR</strong>  - `sage_hr`</li>
+                <li><strong>Sapling</strong>  - `sapling`</li>
+                <li><strong>Squoia One</strong>  - `sequoia_one`</li>
+                <li><strong>Square Payroll</strong>  - `square_payroll`</li>
+                <li><strong>Trinet</strong>  - `trinet`</li>
+                <li><strong>Trinet (API)</strong>  - `trinet_api`</li>
+                <li><strong>Ulti Pro</strong>  - `ulti_pro`</li>
+                <li><strong>Wave</strong>  - `wave`</li>
+                <li><strong>Workday</strong>  - `workday`</li>
+                <li><strong>Zenefits</strong>  - `zenefits`</li>
+                <li><strong>Zenefits (API)</strong>  - `zenefits_api`</li>
               </ul>
-              <p>
+              <blockquote><p>
                 New sandbox providers can be requested by contacting <a href="mailto:developers@tryfinch.com">developers@tryfinch.com</a>.
-              </p>
-              <blockquote>
-                <p>
-                  Note: As of now, the sandbox only returns the same static employer data for each provider, but changed to represent the <a href="https://developer.tryfinch.com/docs/reference/0517ab806dda4-compatibility">various fields each provider supports</a>. In the future, we plan on dynamically generating each employer&apos;s data upon sandbox creation to make it seem more realistic.
-                </p>
-              </blockquote>
+              </p></blockquote>
+
               <p>
                 The sandbox currently supports the following endpoints:
               </p>

@@ -127,8 +127,8 @@ type IAccount = {
 
 type Directory = {
   id: string;
-  first_name: string | null;
-  last_name: string | null;
+  first_name: string;
+  last_name: string;
   middle_name: string | null;
   department: {
     name: string | null
@@ -156,8 +156,8 @@ type IDirectory = {
 type Individual = {
   id: string;
   ssn?: string;
-  first_name: string | null;
-  last_name: string | null;
+  first_name: string;
+  last_name: string;
   middle_name: string | null;
   preferred_name: string | null;
   gender: string | null;
@@ -205,8 +205,8 @@ type IPhoneNumber = {
 
 type Employment = {
   id: string;
-  first_name: string | null;
-  last_name: string | null;
+  first_name: string;
+  last_name: string;
   middle_name: string | null;
   title: string | null;
   manager: {

@@ -29,6 +29,9 @@ export default async function directory(
       const directory = sandbox !== null ? await redis.hget(sandbox, 'directory') : ''
       const parsedDirectory: Directory[] = directory !== null ? JSON.parse(directory) : null
 
+      // Sort Directory by last name
+      parsedDirectory.sort((a, b) => a.last_name.localeCompare(b.last_name))
+
       if (directory) {
         //console.log(parsedDirectory);
         return res.status(200).json(

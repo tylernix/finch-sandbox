@@ -67,9 +67,9 @@ export default function filterSandboxByProvider(sandbox: ISandbox, provider: Pro
             ? sandbox.directory.map(person => {
                 return {
                     id: person.id,
-                    first_name: (directory.first_name) ? person.first_name : null,
+                    first_name: person.first_name,
                     middle_name: (directory.middle_name) ? person.middle_name : null,
-                    last_name: (directory.last_name) ? person.last_name : null,
+                    last_name: person.last_name,
                     manager: {
                         id: (directory.manager.id) ? person.manager.id : null,
                     },
@@ -85,9 +85,9 @@ export default function filterSandboxByProvider(sandbox: ISandbox, provider: Pro
                 return {
                     id: ind.id,
                     ssn: ind.ssn,
-                    first_name: (individual.first_name) ? ind.first_name : null,
+                    first_name: ind.first_name,
                     middle_name: (individual.middle_name) ? ind.middle_name : null,
-                    last_name: (individual.last_name) ? ind.last_name : null,
+                    last_name: ind.last_name,
                     preferred_name: (individual.preferred_name) ? ind.preferred_name : null,
                     dob: (individual.dob) ? ind.dob : null,
                     emails: (individual.email)
@@ -222,6 +222,7 @@ export default function filterSandboxByProvider(sandbox: ISandbox, provider: Pro
         payStatements: (pay_statement)
             ? sandbox.payStatements.map(statement => {
                 return {
+                    payment_id: statement.payment_id,
                     individual_id: (pay_statement.individual_id) ? statement.individual_id : null,
                     type: (pay_statement.type) ? statement.type : null,
                     payment_method: (pay_statement.payment_method) ? statement.payment_method : null,

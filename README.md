@@ -8,17 +8,39 @@ By using a sandbox providers, you can test and debug your apps without referenci
 
 The Finch sandbox mirrors the features on the Finch production servers. While some Finch features do not apply to the sandbox, such as Finch Connect Flow, data syncing schedule, webhooks, rate limiting, and the Benefits endpoints (in progress), the sandbox has the same Finch API feature set as the live environment. You can test your Finch processes in the sandbox since they will behave the same in the sandbox environment as they do on production servers.
 
-The sandbox currently supports 5 mock providers:
+The sandbox currently supports 29 mock providers:
 
+1. ADP Run - `adp_run`
+1. Bamboo HR - `bamboo_hr`
+1. Bamboo HR (API) - `bamboo_hr_api`
+1. HiBob - `bob`
 1. Gusto - `gusto`
-1. BambooHR - `bamboohr`
+1. Humaans - `humaans`
+1. Insperity - `insperity`
 1. Justworks - `justworks`
-1. Paychex Flex- `paychex_flex`
+1. Namely - `namely`
+1. Paychex Flex - `paychex_flex`
+1. Paychex Flex (API) - `paychex_flex_api`
+1. Paycom - `paycom`
+1. Paycom (API) - `paycom_api`
+1. Paylocity - `paylocity`
+1. Paylocity (API) - `paylocity_api`
+1. Personio - `personio`
+1. Quickbooks - `quickbooks`
+1. Rippling - `rippling`
+1. Sage HR - `sage_hr`
+1. Sapling - `sapling`
+1. Squoia One - `sequoia_one`
+1. Square Payroll - `square_payroll`
+1. Trinet - `trinet`
+1. Trinet (API) - `trinet_api`
+1. Ulti Pro - `ulti_pro`
+1. Wave - `wave`
 1. Workday - `workday`
+1. Zenefits - `zenefits`
+1. Zenefits (API) - `zenefits_api`
 
-New sandbox providers can be requested by contacting [developers@tryfinch.com](mailto:developers@tryfinch.com)
-
-> Note: As of now, the sandbox only returns the same static employer data for each provider, but changed to represent the [various fields each provider supports](https://developer.tryfinch.com/docs/reference/0517ab806dda4-compatibility). In the future, we plan on dynamically generating each employer's data upon sandbox creation to make it seem more realistic.
+> New sandbox providers can be requested by contacting [developers@tryfinch.com](mailto:developers@tryfinch.com)
 
 The sandbox currently supports the following endpoints:
 
@@ -48,15 +70,16 @@ Sandbox:
 
 Test your application by creating a sandbox for each provider you plan on integrating. While testing, use the sandbox providers in place of live providers.
 
-First, create a sandbox provider by calling `https://finch-sandbox.vercel.app/api/sandbox/create` and specifying a `provider` and `products`. This curl command is going to make an HTTP POST request with a JSON encoded request body.
+First, create a sandbox provider by calling `https://finch-sandbox.vercel.app/api/sandbox/create` and specifying a `provider_id` and `products` (`employee_size` is optional with a default of `10`). The following curl command makes an HTTP POST request with a JSON encoded request body.
 
 ```bash
 curl https://finch-sandbox.vercel.app/api/sandbox/create \
   -X POST \
   -H "Content-Type: application/json" \
   --data-raw '{
-    "provider": "gusto",
+    "provider_id": "gusto",
     "products": ["company", "directory", "individual", "employment", "payment", "pay_statement"]
+    "employee_size": 15
 }'
 ```
 
@@ -69,6 +92,8 @@ curl https://finch-sandbox.vercel.app/api/employer/directory \
   -H 'Authorization: Bearer <your_access_token>' \
   -H 'Content-Type: application/json'
 ```
+
+Continue to call the other Finch API endpoints.
 
 ## Learn More
 
@@ -86,12 +111,13 @@ To learn more about Finch, take a look at the following resources:
 
 ## Notes
 
-- only creates 2 year of historical pay data
+- only creates 1 year of historical pay data
 - only creating default deductions and contributions of 401k, medical, vision, and dental. Can add others over time.
+- number of employees limited to 1 to 200 employees
 
 ## future api scenario generator inputs
 
-[x] number of employees (limited to 1 to 1000 employees)
+[x] number of employees (limited to 1 to 200 employees)
 [ ] custom_fields names
 [ ] contractor converting to full time employee
 [ ] send a company id to generate next payroll
