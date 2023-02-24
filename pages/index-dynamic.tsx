@@ -11,7 +11,7 @@ const Home: NextPage = () => {
   //markdownToHtml(readmeContent).then(response => setHTML(response))
   getReadmeMarkdown().then(response => {
     console.log('html: ' + response)
-    setHTML(response)
+    //setHTML(response)
   })
 
 
