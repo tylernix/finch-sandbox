@@ -51,9 +51,18 @@ export default async function payment(
       if ("status" in parsedPayments)
         return res.status(501).json(parsedPayments)
 
+      console.log(parsedPayments)
+
       const response: Payment[] = parsedPayments.filter(payment => {
+
         const requestedStartDate = new Date(start_date)
         const requestedEndDate = new Date(end_date)
+
+        if (!payment.pay_period.start_date || !payment.pay_period.end_date) {
+          const paymentPayDate = new Date(payment.pay_date)
+          return paymentPayDate >= requestedStartDate && paymentPayDate <= requestedEndDate
+        }
+
         const paymentStartDate = new Date(payment.pay_period.start_date)
         const paymentEndDate = new Date(payment.pay_period.end_date)
         return paymentStartDate >= requestedStartDate && paymentEndDate <= requestedEndDate
