@@ -1,6 +1,6 @@
 # Finch Sandbox
 
-The Finch sandbox is a self-contained testing environment that simulates the live Finch production API. The sandbox provides a shielded space where you can test your API integration with Finch by creating mock payroll and HRIS providers and watching how requests respond differently based on the provider's [data field compatibility](https://developer.tryfinch.com/docs/reference/0517ab806dda4-compatibility), all without touching any live provider accounts.
+The Finch sandbox is a self-contained testing environment that simulates the live Finch production API. The sandbox provides a shielded space where you can test your API integration with Finch by creating mock payroll and HRIS providers and watching how requests respond differently based on the provider's [data field compatibility](https://developer.tryfinch.com/docs/reference/0517ab806dda4-compatibility) ([now "codified" in this repository](https://github.com/Finch-API/finch-sandbox/blob/main/util/constants.ts)), all without touching any live provider accounts.
 
 By using a sandbox providers, you can test and debug your apps without referencing any real employees or live  employers. The sandbox lets you operate your application in a safe environment and provides a way to fine-tune your Finch processes before you move your product into production.
 
@@ -40,8 +40,6 @@ The sandbox currently supports 29 mock providers:
 1. Zenefits - `zenefits`
 1. Zenefits (API) - `zenefits_api`
 
-> New sandbox providers can be requested by contacting [developers@tryfinch.com](mailto:developers@tryfinch.com)
-
 The sandbox currently supports the following endpoints:
 
 Organization:
@@ -66,11 +64,42 @@ Sandbox:
 
 - `/create` - endpoint to create a new sandbox provider
 
-## Getting Started
+## 🚀 Getting Started
 
-Test your application by creating a sandbox for each provider you plan on integrating. While testing, use the sandbox providers in place of live providers.
+### Prerequisites
 
-First, create a sandbox provider by calling `https://finch-sandbox.vercel.app/api/sandbox/create` and specifying a `provider_id` and `products` (`employee_size` is optional with a default of `10`). The following curl command makes an HTTP POST request with a JSON encoded request body.
+1. REDIS Database - You can create an [Upstash](https://upstash.com/) account pluse a database for free. Use the `Node -> ioredis` connection url
+
+### Basic Setup
+
+Start by cloning the repository to a local project directory - `git clone git@github.com:Finch-API/finch-sandbox.git`
+
+Create a `.env.local` file under your root project directory (or copy our example file by running `cp .env.local.example .env.local` in the terminal).
+
+Define the necessary Finch configuration values as follows:
+
+```
+# The redis url to store each sandbox environment details
+REDIS_URL=
+```
+
+### Start Local Application
+
+1. Start by installing the dependencies of this project: `npm install` or `yarn`.
+
+1. Then, run the development server: `npm run dev` or `yarn dev`.
+
+1. Open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
+
+You can start editing the page by modifying `sandbox/create.ts` or `employer/directory.ts`. The endpoints auto-update as you edit the files.
+
+Finch Data Types can be found in `types/finch.d.ts` and `types/finch-compatibility.d.ts`.
+
+## Call API
+
+Test the sandbox by creating a new sandbox environment. While testing, use the sandbox providers in place of live providers.
+
+First, create a sandbox provider by calling `https://localhost:3001/api/sandbox/create` and specifying a `provider_id` and `products` (`employee_size` is optional with a default of `10`). The following curl command makes an HTTP POST request with a JSON encoded request body.
 
 ```bash
 curl https://finch-sandbox.vercel.app/api/sandbox/create \
@@ -88,12 +117,20 @@ The response to this request will contain a JSON encoded object containing a `pa
 Copy the `access_token` and paste it inside the request Authorization header. Run the following curl command to retrieve the employee directory!
 
 ```bash
-curl https://finch-sandbox.vercel.app/api/employer/directory \
+curl https://localhost:3001/api/employer/directory \
   -H 'Authorization: Bearer <your_access_token>' \
   -H 'Content-Type: application/json'
 ```
 
 Continue to call the other Finch API endpoints.
+
+## Testing
+
+Since this repo mocks many payroll creation functions, this [repo contains various tests](https://github.com/Finch-API/finch-sandbox/blob/main/util/mock.test.ts) to ensure data correctness. To run the test suite, run the following command in your terminal:
+
+```bash
+jest --silent
+```
 
 ## Learn More
 
