@@ -86,9 +86,6 @@ const Home: NextPage = () => {
                 <li><strong>Zenefits</strong>  - `zenefits`</li>
                 <li><strong>Zenefits (API)</strong>  - `zenefits_api`</li>
               </ul>
-              <blockquote><p>
-                New sandbox providers can be requested by contacting <a href="mailto:developers@tryfinch.com">developers@tryfinch.com</a>.
-              </p></blockquote>
 
               <p>
                 The sandbox currently supports the following endpoints:
@@ -124,7 +121,7 @@ const Home: NextPage = () => {
                 Test your application by creating a sandbox for each provider you plan on integrating. While testing, use the sandbox providers in place of live providers.
               </p>
               <p>
-                First, create a sandbox provider by calling <strong>https://finch-sandbox.vercel.app/api/sandbox/create</strong> and specifying a <strong>provider</strong> and <strong>products</strong>. This curl command is going to make an HTTP POST request with a JSON encoded request body.
+                First, create a sandbox provider by calling <strong>https://finch-sandbox.vercel.app/api/sandbox/create</strong> and specifying a <strong>provider_id</strong> and <strong>products</strong> (<strong>employee_size</strong> is optional with a default of `10`). The following curl command makes an HTTP POST request with a JSON encoded request body.
               </p>
               <pre>
                 {curl1}
