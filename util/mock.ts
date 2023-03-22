@@ -1,9 +1,62 @@
 import { faker } from '@faker-js/faker'
-import { SandboxGlobal, Payment, PayStatement, Deduction, Contribution, Tax, Earning, ISandbox, ICompany, IDepartment, ILocation, IAccount, IDirectory, IIndividual, IEmployment } from 'types/finch'
+import { SandboxGlobal, Payment, PayStatement, Deduction, Contribution, Tax, Earning, ISandbox, ICompany, IDepartment, ILocation, IAccount, IDirectory, IIndividual, IEmployment, EarningType } from 'types/finch'
 import moment from 'moment'
 
 // TODO: Set random default Finch fields to use like sample deduction names or employee types so that they apply across the whole employer creation consistently but change with every new company created.
 // - focus on a few class codes
+
+const BENEFITS = {
+    earnings: {
+        base: getRandomElement([
+            { name: 'Regular', type: 'salary' },
+            { name: 'Salary', type: 'salary' },
+            { name: 'Sal', type: 'salary' },
+            { name: 'Regular Earnings', type: 'salary' },
+
+            { name: 'Regular', type: 'wage' },
+            { name: 'REGULAR', type: 'wage' },
+            { name: 'Regular Earnings', type: 'wage' },
+            { name: 'Wages', type: 'wage' },
+            { name: 'HOURLY', type: 'sdf' },
+
+        ]),
+        pto: getRandomElement([
+            { name: 'Holiday', type: 'pto' },
+            { name: 'Vacation', type: 'pto' },
+            { name: 'Paid Time Off', type: 'pto' },
+        ]),
+        commission: getRandomElement([
+            { name: 'Commission', type: 'commission' },
+            { name: 'Sales Commission', type: 'commission' },
+        ]),
+        tips: getRandomElement([
+            { name: 'Paycheck Tips', type: 'tips' },
+            { name: 'Tips', type: 'tips' },
+            { name: 'PayTip', type: null },
+        ]),
+        reimbursement: getRandomElement([
+            { name: 'Reimb', type: 'reimbursement' },
+            { name: 'Reimbursable expense', type: 'reimbursement' },
+            { name: 'Phone Reimbursement', type: 'reimbursement' },
+            { name: 'Misc reimburse2', type: 'reimbursement' },
+            { name: 'Mileage & Meals', type: null },
+        ]),
+        overtime: getRandomElement([
+            { name: 'OT', type: 'overtime' },
+            { name: 'Overtime', type: 'overtime' },
+            { name: 'Overtime Hours', type: 'overtime' },
+            { name: 'regular overtime', type: 'overtime' },
+        ]),
+        bonus: getRandomElement([
+            { name: 'Bonus', type: 'bonus' },
+        ]),
+        sick: getRandomElement([
+            { name: 'Sick', type: 'sick' },
+        ]),
+        other: getRandomElement(['', '']),
+        //null: getRandomElement(['', '']),
+    },
+}
 
 function createSandbox(employeeSize: number, companyId: string): ISandbox {
     const companyName = `${titleCase(faker.word.adjective())} ${titleCase(faker.word.noun())}${getRandomElement([', Inc', ' LLC'])}`
@@ -18,7 +71,7 @@ function createSandbox(employeeSize: number, companyId: string): ISandbox {
     }
 
     const company = createCompany(_globals)
-    var { directory, individuals, employments } = createOrganization(_globals)
+    var { directory, individuals, employments } = createDirectory(_globals)
     var { payments, payStatements } = createPayments(_globals, employments)
 
     const _sandbox: ISandbox = {
@@ -54,7 +107,7 @@ function createCompany(_globals: SandboxGlobal): ICompany {
     }
 }
 
-function createOrganization(_globals: SandboxGlobal): {
+function createDirectory(_globals: SandboxGlobal): {
     directory: IDirectory[],
     individuals: IIndividual[],
     employments: IEmployment[]
@@ -573,8 +626,8 @@ var paymentUtil = {
             if (overtimeHours) {
                 const hourlyPay = Math.round(employee.income.amount / 2080); // Divide salary by 2080 working hours in a year. 
                 const overtimeEarning: Earning = {
-                    type: 'overtime',
-                    name: 'Overtime',
+                    type: BENEFITS.earnings.commission.type,
+                    name: BENEFITS.earnings.commission.name,
                     amount: Math.round(hourlyPay * overtimeHours * 1.2),
                     hours: overtimeHours,
                     currency: 'usd'
@@ -584,14 +637,31 @@ var paymentUtil = {
             }
 
             const baseEarning: Earning = {
-                type: 'salary',
-                name: 'Regular',
+                type: BENEFITS.earnings.base.type,
+                name: BENEFITS.earnings.base.name,
                 amount: grossPay,
                 hours: baseHours,
                 currency: 'usd'
             }
             earnings.push(baseEarning)
             totalEarningsAmount += baseEarning.amount
+
+            const additionalEarningsNumber = getRandomIntFromInterval(0, 3)
+            const { base, ...additionalEarningsTypes } = BENEFITS.earnings // Remove "base" property from object with a tricky Destructuring assignment
+            for (let i = 0; i <= additionalEarningsNumber; i++) {
+
+                const randomEarnings = getRandomPropertyFromObject(additionalEarningsTypes)
+                const randomEarning: { name: string, type: EarningType } = getRandomElement(randomEarnings)
+                const additionalEarning: Earning = {
+                    type: randomEarning.type,
+                    name: randomEarning.name,
+                    amount: getRandomIntFromInterval(10000, grossPay / 10), // get amount between $100.00 and 10% of current gross pay
+                    hours: 0,
+                    currency: 'usd'
+                }
+                earnings.push(additionalEarning)
+                totalEarningsAmount += additionalEarning.amount
+            }
 
             return { earnings, employeeEarningsAmount: totalEarningsAmount }
         }
@@ -907,15 +977,19 @@ var paymentUtil = {
 }
 
 
-
-
-
-
-
-export { createSandbox, createCompany, createOrganization as createDirectory, companyUtil, directoryUtil, paymentUtil, }
+export { createSandbox, createCompany, createDirectory, companyUtil, directoryUtil, paymentUtil, }
 
 function getRandomElement(collection: any[]) {
     return (collection) ? collection[Math.floor(Math.random() * collection.length)] : null
+}
+
+function getRandomIntFromInterval(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+const getRandomPropertyFromObject = function (obj: any) {
+    const keys = Object.keys(obj)
+    return obj[keys[keys.length * Math.random() << 0]]
 }
 
 function titleCase(str: string) {

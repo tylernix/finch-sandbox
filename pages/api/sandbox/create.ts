@@ -2,7 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import redis from '@/util/redis'
 import { v4 as uuidv4 } from 'uuid'
 import { FINCH_PROVIDERS } from '@/util/constants'
-import MockProvider from '@/util/providers'
+import MockScenarios from '@/util/scenarios'
+
 
 export default async function createSandbox(
   req: NextApiRequest,
@@ -43,6 +44,7 @@ export default async function createSandbox(
 
       //console.log(provider)
 
+      // Token Validation
       const access_token = 'sandbox-token-' + uuidv4()
       const company_id = uuidv4()
       const sandbox_name = `sandbox:${company_id}:${provider}`
@@ -50,8 +52,8 @@ export default async function createSandbox(
       products.forEach(async (product: string) => await redis.sadd(`products:${access_token}`, product))
       const employee_amount: number = employee_size ?? 10
 
-      const mock = MockProvider()
-      const sandbox = mock.createMockProvider(sandbox_name, employee_amount, company_id, provider)
+      const scenarios = MockScenarios()
+      const sandbox = await scenarios.createMockProvider(sandbox_name, employee_amount, company_id, provider)
       if (!sandbox) throw Error('Error creating sandbox environment')
 
       return res.status(200).json({ payroll_provider_id: provider.id, company_id, access_token })
