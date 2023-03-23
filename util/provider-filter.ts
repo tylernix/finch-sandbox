@@ -242,8 +242,8 @@ export default function filterSandboxByProvider(sandbox: ISandbox, provider: Pro
                     earnings: (pay_statement.earning)
                         ? statement.earnings.map(earning => {
                             return {
-                                type: (pay_statement.earnings.type) ? earning.type : null,
                                 name: (pay_statement.earnings.name) ? earning.name : null,
+                                type: (pay_statement.earnings.type) ? earning.type : null,
                                 amount: (pay_statement.earnings.amount) ? earning.amount : null,
                                 currency: (pay_statement.earnings.currency) ? earning.currency : null,
                                 hours: (pay_statement.earnings.hours) ? earning.hours : null,

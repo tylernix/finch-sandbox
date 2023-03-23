@@ -663,7 +663,7 @@ var paymentUtil = {
             totalEarningsAmount += baseEarning.amount
 
             // Add any secondary income earning (sometimes)
-            if (Math.random() < 0.4) { // 40% probability of getting true
+            if (Math.random() < 0.4) { // 50% probability of getting true
                 const secondaryKeys = Object.keys(BENEFITS.earnings.secondary)
                 const randSecondaryKey: 'commission' | 'tips' | 'bonus' = getRandomElement(secondaryKeys)
                 const randomSecondaryEarning: { name: string, type: EarningType } = BENEFITS.earnings.secondary[randSecondaryKey]
@@ -680,7 +680,7 @@ var paymentUtil = {
             }
 
             // Add any supplemental income earning (sometimes)
-            if (Math.random() < 0.3) { // 20% probability of getting true
+            if (Math.random() < 0.3) { // 40% probability of getting true
                 const supplementalKeys = Object.keys(BENEFITS.earnings.supplemental)
                 const randSupplementalKey: 'pto' | 'sick' | 'reimbursement' = getRandomElement(supplementalKeys)
                 const randomSupplementalEarning: { name: string, type: EarningType } = BENEFITS.earnings.supplemental[randSupplementalKey]
@@ -716,6 +716,7 @@ var paymentUtil = {
             //console.log(earnings)
             return { earnings, employeeEarningsAmount: totalEarningsAmount }
         }
+
         // If Contractor...
         else if (employee.employment.type === 'contractor') {
             const hourlyPay = employee.income.amount
