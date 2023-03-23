@@ -47,7 +47,7 @@ export default async function createSandbox(
       // Token Validation
       const access_token = 'sandbox-token-' + uuidv4()
       const company_id = uuidv4()
-      const sandbox_name = `sandbox:${company_id}:${provider}`
+      const sandbox_name = `sandbox:${company_id}:${provider.display_name}`
       await redis.set(access_token, sandbox_name)
       products.forEach(async (product: string) => await redis.sadd(`products:${access_token}`, product))
       const employee_amount: number = employee_size ?? 10

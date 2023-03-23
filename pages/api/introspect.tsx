@@ -14,15 +14,6 @@ export default async function introspect(
 
     const token = isValid.response
 
-    // if (!token)
-    //     return res.status(400).json("Access token required")
-    // if (Array.isArray(token))
-    //     return res.status(400).json("Improper Access token format")
-
-    // const isValidToken = await validToken(token)
-    // if (!isValidToken)
-    //     return res.status(401).json('Unauthorized: Invalid access token')
-
     if (req.method === 'GET') {
         try {
             const sandbox = await redis.get(token)

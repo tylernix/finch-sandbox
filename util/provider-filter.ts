@@ -246,6 +246,7 @@ export default function filterSandboxByProvider(sandbox: ISandbox, provider: Pro
                                 name: (pay_statement.earnings.name) ? earning.name : null,
                                 amount: (pay_statement.earnings.amount) ? earning.amount : null,
                                 currency: (pay_statement.earnings.currency) ? earning.currency : null,
+                                hours: (pay_statement.earnings.hours) ? earning.hours : null,
                             } as Earning
                         })
                         : null,
