@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { validToken, getTokenFromReqAuthHeader } from '@/util/access-token'
+import { isValidToken, validToken, getTokenFromReqAuthHeader } from '@/util/access-token'
 import redis from '@/util/redis'
 
 export default async function introspect(
@@ -7,16 +7,21 @@ export default async function introspect(
     res: NextApiResponse
 ) {
     console.log(req.method + " /api/introspect")
-    const token = getTokenFromReqAuthHeader(req)
+    const headerToken = getTokenFromReqAuthHeader(req)
+    const isValid = await isValidToken(headerToken)
+    if (isValid.status != 200)
+        return res.status(isValid.status).json(isValid.response)
 
-    if (!token)
-        return res.status(400).json("Access token required")
-    if (Array.isArray(token))
-        return res.status(400).json("Improper Access token format")
+    const token = isValid.response
 
-    const isValidToken = await validToken(token)
-    if (!isValidToken)
-        return res.status(401).json('Unauthorized: Invalid access token')
+    // if (!token)
+    //     return res.status(400).json("Access token required")
+    // if (Array.isArray(token))
+    //     return res.status(400).json("Improper Access token format")
+
+    // const isValidToken = await validToken(token)
+    // if (!isValidToken)
+    //     return res.status(401).json('Unauthorized: Invalid access token')
 
     if (req.method === 'GET') {
         try {

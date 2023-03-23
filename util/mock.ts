@@ -1,9 +1,77 @@
 import { faker } from '@faker-js/faker'
-import { SandboxGlobal, Payment, PayStatement, Deduction, Contribution, Tax, Earning, ISandbox, ICompany, IDepartment, ILocation, IAccount, IDirectory, IIndividual, IEmployment } from 'types/finch'
+import { SandboxGlobal, Payment, PayStatement, Deduction, Contribution, Tax, Earning, ISandbox, ICompany, IDepartment, ILocation, IAccount, IDirectory, IIndividual, IEmployment, EarningType } from 'types/finch'
 import moment from 'moment'
 
 // TODO: Set random default Finch fields to use like sample deduction names or employee types so that they apply across the whole employer creation consistently but change with every new company created.
 // - focus on a few class codes
+
+const BENEFITS = {
+    earnings: {
+        base: {
+            salary: getRandomElement([
+                { name: 'Regular', type: 'salary' },
+                { name: 'Salary', type: 'salary' },
+                { name: 'Sal', type: 'salary' },
+                { name: 'Regular Earnings', type: 'salary' },
+                { name: 'Regular', type: null },
+
+                { name: 'Regular', type: 'wage' },
+                { name: 'REGULAR', type: 'wage' },
+                { name: 'Regular Earnings', type: 'wage' },
+                { name: 'Wages', type: 'wage' },
+                { name: 'HOURLY', type: 'wage' },
+            ])
+        },
+        secondary: {
+            commission: getRandomElement([
+                { name: 'Commission', type: 'commission' },
+                { name: 'Sales Commission', type: 'commission' },
+            ]),
+            tips: getRandomElement([
+                { name: 'Paycheck Tips', type: 'tips' },
+                { name: 'Tips', type: 'tips' },
+                { name: 'PayTip', type: null },
+            ]),
+            bonus: getRandomElement([
+                { name: 'Bonus', type: 'bonus' },
+            ]),
+        },
+        supplemental: {
+            pto: getRandomElement([
+                { name: 'Holiday', type: 'pto' },
+                { name: 'Vacation', type: 'pto' },
+                { name: 'Vac', type: 'pto' },
+                { name: 'Paid Time Off', type: 'pto' },
+                { name: 'PTO', type: 'pto' },
+                { name: 'PaidTO', type: 'pto' },
+                { name: 'HOLIDAY', type: 'pto' },
+                { name: 'FLEXTMOFF', type: null },
+                { name: 'PTO', type: null },
+
+            ]),
+            reimbursement: getRandomElement([
+                { name: 'Reimb', type: 'reimbursement' },
+                { name: 'Reimbursable expense', type: 'reimbursement' },
+                { name: 'Phone Reimbursement', type: 'reimbursement' },
+                { name: 'Misc reimburse2', type: 'reimbursement' },
+                { name: 'Mileage & Meals', type: null },
+                { name: 'GYM MEMBERSHIP', type: null },
+
+            ]),
+            sick: getRandomElement([
+                { name: 'Sick', type: 'sick' },
+            ]),
+            //other: getRandomElement(['', '']),
+        },
+        overtime: getRandomElement([
+            { name: 'OT', type: 'overtime' },
+            { name: 'Overtime', type: 'overtime' },
+            { name: 'Overtime Hours', type: 'overtime' },
+            { name: 'regular overtime', type: 'overtime' },
+            { name: 'Reg OT', type: 'overtime' },
+        ]),
+    },
+}
 
 function createSandbox(employeeSize: number, companyId: string): ISandbox {
     const companyName = `${titleCase(faker.word.adjective())} ${titleCase(faker.word.noun())}${getRandomElement([', Inc', ' LLC'])}`
@@ -18,7 +86,7 @@ function createSandbox(employeeSize: number, companyId: string): ISandbox {
     }
 
     const company = createCompany(_globals)
-    var { directory, individuals, employments } = createOrganization(_globals)
+    var { directory, individuals, employments } = createDirectory(_globals)
     var { payments, payStatements } = createPayments(_globals, employments)
 
     const _sandbox: ISandbox = {
@@ -54,7 +122,7 @@ function createCompany(_globals: SandboxGlobal): ICompany {
     }
 }
 
-function createOrganization(_globals: SandboxGlobal): {
+function createDirectory(_globals: SandboxGlobal): {
     directory: IDirectory[],
     individuals: IIndividual[],
     employments: IEmployment[]
@@ -573,8 +641,8 @@ var paymentUtil = {
             if (overtimeHours) {
                 const hourlyPay = Math.round(employee.income.amount / 2080); // Divide salary by 2080 working hours in a year. 
                 const overtimeEarning: Earning = {
-                    type: 'overtime',
-                    name: 'Overtime',
+                    type: BENEFITS.earnings.overtime.type,
+                    name: BENEFITS.earnings.overtime.name,
                     amount: Math.round(hourlyPay * overtimeHours * 1.2),
                     hours: overtimeHours,
                     currency: 'usd'
@@ -583,9 +651,10 @@ var paymentUtil = {
                 totalEarningsAmount += overtimeEarning.amount
             }
 
+            // Add a default base earning, could be 'salary' or 'wage' type
             const baseEarning: Earning = {
-                type: 'salary',
-                name: 'Regular',
+                type: BENEFITS.earnings.base.salary?.type ?? null,
+                name: BENEFITS.earnings.base.salary.name,
                 amount: grossPay,
                 hours: baseHours,
                 currency: 'usd'
@@ -593,6 +662,58 @@ var paymentUtil = {
             earnings.push(baseEarning)
             totalEarningsAmount += baseEarning.amount
 
+            // Add any secondary income earning (sometimes)
+            if (Math.random() < 0.4) { // 40% probability of getting true
+                const secondaryKeys = Object.keys(BENEFITS.earnings.secondary)
+                const randSecondaryKey: 'commission' | 'tips' | 'bonus' = getRandomElement(secondaryKeys)
+                const randomSecondaryEarning: { name: string, type: EarningType } = BENEFITS.earnings.secondary[randSecondaryKey]
+
+                const secondaryEarning: Earning = {
+                    type: randomSecondaryEarning?.type ?? null,
+                    name: randomSecondaryEarning.name,
+                    amount: getRandomIntFromInterval(10000, grossPay / 10), // get amount between $100.00 and 10% of current gross pay
+                    hours: 0,
+                    currency: 'usd'
+                }
+                earnings.push(secondaryEarning)
+                totalEarningsAmount += secondaryEarning.amount
+            }
+
+            // Add any supplemental income earning (sometimes)
+            if (Math.random() < 0.3) { // 20% probability of getting true
+                const supplementalKeys = Object.keys(BENEFITS.earnings.supplemental)
+                const randSupplementalKey: 'pto' | 'sick' | 'reimbursement' = getRandomElement(supplementalKeys)
+                const randomSupplementalEarning: { name: string, type: EarningType } = BENEFITS.earnings.supplemental[randSupplementalKey]
+
+                if (randomSupplementalEarning.type === 'sick' || randomSupplementalEarning.type === 'pto') {
+                    const hours = getRandomElement([8, 16, 24, 32, 40]) // full day (8 hour) increments
+                    let baseEarning = earnings.find(earning => earning.hours === 80)
+                    if (baseEarning)
+                        baseEarning.hours -= hours // reduce hours of base pay since either pto or sick
+
+                    const supplementalEarning: Earning = {
+                        type: randomSupplementalEarning.type,
+                        name: randomSupplementalEarning.name,
+                        amount: getRandomIntFromInterval(10000, grossPay / 10), // get amount between $100.00 and 10% of current gross pay
+                        hours: hours,
+                        currency: 'usd'
+                    }
+                    earnings.push(supplementalEarning)
+                    totalEarningsAmount += supplementalEarning.amount
+                } else {
+                    const supplementalEarning: Earning = {
+                        type: randomSupplementalEarning?.type ?? null,
+                        name: randomSupplementalEarning.name,
+                        amount: getRandomIntFromInterval(10000, grossPay / 10), // get amount between $100.00 and 10% of current gross pay
+                        hours: 0,
+                        currency: 'usd'
+                    }
+                    earnings.push(supplementalEarning)
+                    totalEarningsAmount += supplementalEarning.amount
+                }
+            }
+
+            //console.log(earnings)
             return { earnings, employeeEarningsAmount: totalEarningsAmount }
         }
         // If Contractor...
@@ -907,15 +1028,19 @@ var paymentUtil = {
 }
 
 
-
-
-
-
-
-export { createSandbox, createCompany, createOrganization as createDirectory, companyUtil, directoryUtil, paymentUtil, }
+export { createSandbox, createCompany, createDirectory, companyUtil, directoryUtil, paymentUtil, }
 
 function getRandomElement(collection: any[]) {
     return (collection) ? collection[Math.floor(Math.random() * collection.length)] : null
+}
+
+function getRandomIntFromInterval(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+const getRandomPropertyFromObject = function (obj: any) {
+    const keys = Object.keys(obj)
+    return obj[keys[keys.length * Math.random() << 0]]
 }
 
 function titleCase(str: string) {

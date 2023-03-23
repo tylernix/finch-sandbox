@@ -3,8 +3,7 @@ import { createSandbox } from '@/util/mock'
 import filterSandboxByProvider from '@/util/provider-filter'
 import { Provider } from 'types/finch'
 
-// NO LONGER USED
-function Providers() {
+export default function Scenarios() {
     async function createMockProvider(sandbox_name: string, employee_amount: number, company_id: string, provider: Provider): Promise<boolean> {
         const newSandbox = createSandbox(employee_amount, company_id)
         const filteredSandbox = filterSandboxByProvider(newSandbox, provider)
@@ -21,7 +20,10 @@ function Providers() {
         if (r1 && r2 && r3 && r4 && r5 && r6) return true
         else return false
     }
+    async function addMockEmployee() {
+
+    }
 
 
-    return { createMockProvider }
+    return { createMockProvider, addMockEmployee }
 }

@@ -345,30 +345,29 @@ type IPayStatement = {
 }
 
 type Earning = {
-  type: 'salary' | 'wage' | 'reimbursement'
-  | 'overtime' | 'severance' | 'double_overtime'
-  | 'pto' | 'sick' | 'bonus' | 'commission'
-  | 'tips' | '1099' | 'other' | null;
+  type: EarningType;
   name: string;
   amount: number;
   hours: number;
-  currency: string
+  currency: string;
 }
 
 type IEarning = {
-  type: 'salary' | 'wage' | 'reimbursement'
-  | 'overtime' | 'severance' | 'double_overtime'
-  | 'pto' | 'sick' | 'bonus' | 'commission'
-  | 'tips' | '1099' | 'other' | null;
+  type: EarningType;
   name: string;
   amount: number;
   hours: number;
-  currency: string
+  currency: string;
 }
+
+type EarningType = 'salary' | 'wage' | 'reimbursement'
+  | 'overtime' | 'severance' | 'double_overtime'
+  | 'pto' | 'sick' | 'bonus' | 'commission'
+  | 'tips' | '1099' | 'other' | null;
 
 type Tax = {
   name: string;
-  type: 'state' | 'federal' | 'local' | 'fica' | null
+  type: TaxType;
   amount: number;
   employer: boolean;
   currency: string
@@ -376,23 +375,20 @@ type Tax = {
 
 type ITax = {
   name: string;
-  type: 'state' | 'federal' | 'local' | 'fica' | null
+  type: TaxType;
   amount: number;
   employer: boolean;
   currency: string
 }
+
+type TaxType = 'state' | 'federal' | 'local' | 'fica' | null
 
 type Deduction = {
   name: string;
   amount: number;
   currency: string;
   pre_tax: boolean;
-  type: '401k' | '401k_roth' | '401k_loan'
-  | '403b' | '403b_roth' | '457' | '457_roth'
-  | 's125_medical' | 's125_dental' | 's125_vision'
-  | 'hsa_pre' | 'hsa_post' | 'fsa_medical'
-  | 'fsa_dependent_care' | 'simple_ira' | 'simple'
-  | 'commuter' | 'custom_post_tax' | 'custom_pre_tax' | null
+  type: DeductionType;
 }
 
 type IDeduction = {
@@ -400,37 +396,36 @@ type IDeduction = {
   amount: number;
   currency: string;
   pre_tax: boolean;
-  type: '401k' | '401k_roth' | '401k_loan'
+  type: DeductionType;
+}
+
+type DeductionType = '401k' | '401k_roth' | '401k_loan'
   | '403b' | '403b_roth' | '457' | '457_roth'
   | 's125_medical' | 's125_dental' | 's125_vision'
   | 'hsa_pre' | 'hsa_post' | 'fsa_medical'
   | 'fsa_dependent_care' | 'simple_ira' | 'simple'
   | 'commuter' | 'custom_post_tax' | 'custom_pre_tax' | null
-}
 
 type Contribution = {
   name: string;
   amount: number;
   currency: string;
-  type: '401k' | '401k_roth' | '401k_loan'
-  | '403b' | '403b_roth' | '457' | '457_roth'
-  | 's125_medical' | 's125_dental' | 's125_vision'
-  | 'hsa_pre' | 'hsa_post' | 'fsa_medical'
-  | 'fsa_dependent_care' | 'simple_ira' | 'simple'
-  | 'commuter' | 'custom_post_tax' | 'custom_pre_tax' | null
+  type: ContributionType;
 }
 
 type IContribution = {
   name: string;
   amount: number;
   currency: string;
-  type: '401k' | '401k_roth' | '401k_loan'
+  type: ContributionType;
+}
+
+type ContributionType = '401k' | '401k_roth' | '401k_loan'
   | '403b' | '403b_roth' | '457' | '457_roth'
   | 's125_medical' | 's125_dental' | 's125_vision'
   | 'hsa_pre' | 'hsa_post' | 'fsa_medical'
   | 'fsa_dependent_care' | 'simple_ira' | 'simple'
   | 'commuter' | 'custom_post_tax' | 'custom_pre_tax' | null
-}
 
 type Company = {
   id: string;
