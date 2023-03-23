@@ -7,54 +7,69 @@ import moment from 'moment'
 
 const BENEFITS = {
     earnings: {
-        base: getRandomElement([
-            { name: 'Regular', type: 'salary' },
-            { name: 'Salary', type: 'salary' },
-            { name: 'Sal', type: 'salary' },
-            { name: 'Regular Earnings', type: 'salary' },
+        base: {
+            salary: getRandomElement([
+                { name: 'Regular', type: 'salary' },
+                { name: 'Salary', type: 'salary' },
+                { name: 'Sal', type: 'salary' },
+                { name: 'Regular Earnings', type: 'salary' },
+                { name: 'Regular', type: null },
 
-            { name: 'Regular', type: 'wage' },
-            { name: 'REGULAR', type: 'wage' },
-            { name: 'Regular Earnings', type: 'wage' },
-            { name: 'Wages', type: 'wage' },
-            { name: 'HOURLY', type: 'sdf' },
+                { name: 'Regular', type: 'wage' },
+                { name: 'REGULAR', type: 'wage' },
+                { name: 'Regular Earnings', type: 'wage' },
+                { name: 'Wages', type: 'wage' },
+                { name: 'HOURLY', type: 'wage' },
+            ])
+        },
+        secondary: {
+            commission: getRandomElement([
+                { name: 'Commission', type: 'commission' },
+                { name: 'Sales Commission', type: 'commission' },
+            ]),
+            tips: getRandomElement([
+                { name: 'Paycheck Tips', type: 'tips' },
+                { name: 'Tips', type: 'tips' },
+                { name: 'PayTip', type: null },
+            ]),
+            bonus: getRandomElement([
+                { name: 'Bonus', type: 'bonus' },
+            ]),
+        },
+        supplemental: {
+            pto: getRandomElement([
+                { name: 'Holiday', type: 'pto' },
+                { name: 'Vacation', type: 'pto' },
+                { name: 'Vac', type: 'pto' },
+                { name: 'Paid Time Off', type: 'pto' },
+                { name: 'PTO', type: 'pto' },
+                { name: 'PaidTO', type: 'pto' },
+                { name: 'HOLIDAY', type: 'pto' },
+                { name: 'FLEXTMOFF', type: null },
+                { name: 'PTO', type: null },
 
-        ]),
-        pto: getRandomElement([
-            { name: 'Holiday', type: 'pto' },
-            { name: 'Vacation', type: 'pto' },
-            { name: 'Paid Time Off', type: 'pto' },
-        ]),
-        commission: getRandomElement([
-            { name: 'Commission', type: 'commission' },
-            { name: 'Sales Commission', type: 'commission' },
-        ]),
-        tips: getRandomElement([
-            { name: 'Paycheck Tips', type: 'tips' },
-            { name: 'Tips', type: 'tips' },
-            { name: 'PayTip', type: null },
-        ]),
-        reimbursement: getRandomElement([
-            { name: 'Reimb', type: 'reimbursement' },
-            { name: 'Reimbursable expense', type: 'reimbursement' },
-            { name: 'Phone Reimbursement', type: 'reimbursement' },
-            { name: 'Misc reimburse2', type: 'reimbursement' },
-            { name: 'Mileage & Meals', type: null },
-        ]),
+            ]),
+            reimbursement: getRandomElement([
+                { name: 'Reimb', type: 'reimbursement' },
+                { name: 'Reimbursable expense', type: 'reimbursement' },
+                { name: 'Phone Reimbursement', type: 'reimbursement' },
+                { name: 'Misc reimburse2', type: 'reimbursement' },
+                { name: 'Mileage & Meals', type: null },
+                { name: 'GYM MEMBERSHIP', type: null },
+
+            ]),
+            sick: getRandomElement([
+                { name: 'Sick', type: 'sick' },
+            ]),
+            //other: getRandomElement(['', '']),
+        },
         overtime: getRandomElement([
             { name: 'OT', type: 'overtime' },
             { name: 'Overtime', type: 'overtime' },
             { name: 'Overtime Hours', type: 'overtime' },
             { name: 'regular overtime', type: 'overtime' },
+            { name: 'Reg OT', type: 'overtime' },
         ]),
-        bonus: getRandomElement([
-            { name: 'Bonus', type: 'bonus' },
-        ]),
-        sick: getRandomElement([
-            { name: 'Sick', type: 'sick' },
-        ]),
-        other: getRandomElement(['', '']),
-        //null: getRandomElement(['', '']),
     },
 }
 
@@ -626,8 +641,8 @@ var paymentUtil = {
             if (overtimeHours) {
                 const hourlyPay = Math.round(employee.income.amount / 2080); // Divide salary by 2080 working hours in a year. 
                 const overtimeEarning: Earning = {
-                    type: BENEFITS.earnings.commission.type,
-                    name: BENEFITS.earnings.commission.name,
+                    type: BENEFITS.earnings.overtime.type,
+                    name: BENEFITS.earnings.overtime.name,
                     amount: Math.round(hourlyPay * overtimeHours * 1.2),
                     hours: overtimeHours,
                     currency: 'usd'
@@ -636,9 +651,10 @@ var paymentUtil = {
                 totalEarningsAmount += overtimeEarning.amount
             }
 
+            // Add a default base earning, could be 'salary' or 'wage' type
             const baseEarning: Earning = {
-                type: BENEFITS.earnings.base.type,
-                name: BENEFITS.earnings.base.name,
+                type: BENEFITS.earnings.base.salary?.type ?? null,
+                name: BENEFITS.earnings.base.salary.name,
                 amount: grossPay,
                 hours: baseHours,
                 currency: 'usd'
@@ -646,23 +662,58 @@ var paymentUtil = {
             earnings.push(baseEarning)
             totalEarningsAmount += baseEarning.amount
 
-            const additionalEarningsNumber = getRandomIntFromInterval(0, 3)
-            const { base, ...additionalEarningsTypes } = BENEFITS.earnings // Remove "base" property from object with a tricky Destructuring assignment
-            for (let i = 0; i <= additionalEarningsNumber; i++) {
+            // Add any secondary income earning (sometimes)
+            if (Math.random() < 0.4) { // 40% probability of getting true
+                const secondaryKeys = Object.keys(BENEFITS.earnings.secondary)
+                const randSecondaryKey: 'commission' | 'tips' | 'bonus' = getRandomElement(secondaryKeys)
+                const randomSecondaryEarning: { name: string, type: EarningType } = BENEFITS.earnings.secondary[randSecondaryKey]
 
-                const randomEarnings = getRandomPropertyFromObject(additionalEarningsTypes)
-                const randomEarning: { name: string, type: EarningType } = getRandomElement(randomEarnings)
-                const additionalEarning: Earning = {
-                    type: randomEarning.type,
-                    name: randomEarning.name,
+                const secondaryEarning: Earning = {
+                    type: randomSecondaryEarning?.type ?? null,
+                    name: randomSecondaryEarning.name,
                     amount: getRandomIntFromInterval(10000, grossPay / 10), // get amount between $100.00 and 10% of current gross pay
                     hours: 0,
                     currency: 'usd'
                 }
-                earnings.push(additionalEarning)
-                totalEarningsAmount += additionalEarning.amount
+                earnings.push(secondaryEarning)
+                totalEarningsAmount += secondaryEarning.amount
             }
 
+            // Add any supplemental income earning (sometimes)
+            if (Math.random() < 0.3) { // 20% probability of getting true
+                const supplementalKeys = Object.keys(BENEFITS.earnings.supplemental)
+                const randSupplementalKey: 'pto' | 'sick' | 'reimbursement' = getRandomElement(supplementalKeys)
+                const randomSupplementalEarning: { name: string, type: EarningType } = BENEFITS.earnings.supplemental[randSupplementalKey]
+
+                if (randomSupplementalEarning.type === 'sick' || randomSupplementalEarning.type === 'pto') {
+                    const hours = getRandomElement([8, 16, 24, 32, 40]) // full day (8 hour) increments
+                    let baseEarning = earnings.find(earning => earning.hours === 80)
+                    if (baseEarning)
+                        baseEarning.hours -= hours // reduce hours of base pay since either pto or sick
+
+                    const supplementalEarning: Earning = {
+                        type: randomSupplementalEarning.type,
+                        name: randomSupplementalEarning.name,
+                        amount: getRandomIntFromInterval(10000, grossPay / 10), // get amount between $100.00 and 10% of current gross pay
+                        hours: hours,
+                        currency: 'usd'
+                    }
+                    earnings.push(supplementalEarning)
+                    totalEarningsAmount += supplementalEarning.amount
+                } else {
+                    const supplementalEarning: Earning = {
+                        type: randomSupplementalEarning?.type ?? null,
+                        name: randomSupplementalEarning.name,
+                        amount: getRandomIntFromInterval(10000, grossPay / 10), // get amount between $100.00 and 10% of current gross pay
+                        hours: 0,
+                        currency: 'usd'
+                    }
+                    earnings.push(supplementalEarning)
+                    totalEarningsAmount += supplementalEarning.amount
+                }
+            }
+
+            //console.log(earnings)
             return { earnings, employeeEarningsAmount: totalEarningsAmount }
         }
         // If Contractor...

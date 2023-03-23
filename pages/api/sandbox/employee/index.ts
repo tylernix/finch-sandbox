@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import redis from '@/util/redis'
 import { v4 as uuidv4 } from 'uuid'
 import { FINCH_PROVIDERS } from '@/util/constants'
-import MockProvider from '@/util/providers'
+//import MockProvider from '@/util/providers'
 import { getTokenFromReqAuthHeader, isValidToken } from '@/util/access-token'
 import MockScenarios from '@/util/scenarios'
 
